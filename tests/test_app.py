@@ -56,3 +56,45 @@ def test_get_users_returns_all_users(client):
     assert all("username" in user for user in users)
     assert all("email" in user for user in users)
     assert all("password" not in user for user in users)
+
+
+def test_update_existing_user_returns_ok(client):
+    user = client.post(
+        "/users/", json=_create_user_request(is_valid=True)
+    )  # TODO: Remove this line by injecting mock DB
+    user_id = user.json()["id"]
+    response = client.put(
+        f"/users/{user_id}/", json=_create_user_request(is_valid=True)
+    )
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_update_existing_user_returns_updated_user(client):
+    user = client.post(
+        "/users/", json=_create_user_request(is_valid=True)
+    )  # TODO: Remove this line by injecting mock DB
+    user_id = user.json()["id"]
+    response = client.put(
+        f"/users/{user_id}/",
+        json={"username": "new", "email": "valid@valid.com", "password": "123"},
+    )
+    assert response.json()["username"] == "new"
+    assert response.json()["id"] == user_id
+
+
+def test_invalid_user_update_returns_unprocessable_entity(client):
+    user = client.post(
+        "/users/", json=_create_user_request(is_valid=True)
+    )  # TODO: Remove this line by injecting mock DB
+    user_id = user.json()["id"]
+    response = client.put(
+        f"/users/{user_id}/", json=_create_user_request(is_valid=False)
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_update_non_existing_user_returns_not_found(client):
+    all_ids = [user["id"] for user in client.get("/users/").json()["users"]]
+    bad_id = max(all_ids) + 1 if all_ids else 1
+    response = client.put(f"/users/{bad_id}/", json=_create_user_request(is_valid=True))
+    assert response.status_code == HTTPStatus.NOT_FOUND
