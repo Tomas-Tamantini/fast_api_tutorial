@@ -16,3 +16,7 @@ class UserDB(CreateUserRequest):
 
 class UserResponse(_UserPublicData):
     id: int
+
+
+class UserListResponse(BaseModel):
+    users: list[UserResponse]
