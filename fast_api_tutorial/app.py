@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from fast_api_tutorial.schemas import CreateUserRequest, CreateUserResponse
+from fast_api_tutorial.schemas import CreateUserRequest, UserResponse, UserDB
 
 app = FastAPI()
 
@@ -26,6 +26,11 @@ def get_html():
     """
 
 
-@app.post("/users/", status_code=HTTPStatus.CREATED, response_model=CreateUserResponse)
+mock_user_db = []
+
+
+@app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(user: CreateUserRequest):
-    return user
+    user_with_id = UserDB(id=len(mock_user_db) + 1, **user.model_dump())
+    mock_user_db.append(user_with_id)
+    return user_with_id

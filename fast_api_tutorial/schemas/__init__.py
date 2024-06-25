@@ -1,1 +1,1 @@
-from .user import CreateUserRequest, CreateUserResponse
+from .user import CreateUserRequest, UserResponse, UserDB

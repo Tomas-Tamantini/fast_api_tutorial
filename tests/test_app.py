@@ -33,8 +33,7 @@ def test_create_valid_user_returns_created(client):
 
 def test_create_valid_user_response_does_not_return_password(client):
     request = _create_user_request(is_valid=True)
-    response = client.post("/users/", json=request)
-    assert response.json() == {
-        "username": request["username"],
-        "email": request["email"],
-    }
+    response = client.post("/users/", json=request).json()
+    assert "password" not in response
+    assert response["username"] == request["username"]
+    assert response["email"] == request["email"]

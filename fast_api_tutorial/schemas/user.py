@@ -1,12 +1,18 @@
 from pydantic import BaseModel, EmailStr
 
 
-class CreateUserRequest(BaseModel):
+class _UserPublicData(BaseModel):
     username: str
     email: EmailStr
+
+
+class CreateUserRequest(_UserPublicData):
     password: str
 
 
-class CreateUserResponse(BaseModel):
-    username: str
-    email: EmailStr
+class UserDB(CreateUserRequest):
+    id: int
+
+
+class UserResponse(_UserPublicData):
+    id: int
