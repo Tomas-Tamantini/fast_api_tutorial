@@ -46,11 +46,39 @@ def get_users():
     return {"users": mock_user_db}
 
 
+class _UserNotFoundError(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
+
+
+def _user_id_exists(user_id: int):
+    return user_id >= 1 and user_id <= len(mock_user_db)
+
+
+@app.get("/users/{user_id}/", response_model=UserResponse)
+def get_user(user_id: int):
+    if _user_id_exists(user_id):
+        user_index = user_id - 1
+        return mock_user_db[user_index]
+    else:
+        raise _UserNotFoundError()
+
+
 @app.put("/users/{user_id}/", response_model=UserResponse)
 def update_user(user_id: int, user: CreateUserRequest):
-    user_index = user_id - 1
-    if user_index < 0 or user_index >= len(mock_user_db):
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
-    else:
+    if _user_id_exists(user_id):
+        user_index = user_id - 1
         mock_user_db[user_index] = UserDB(id=user_id, **user.model_dump())
         return mock_user_db[user_index]
+    else:
+        raise _UserNotFoundError()
+
+
+@app.delete("/users/{user_id}/", response_model=UserResponse)
+def delete_user(user_id: int):
+    if _user_id_exists(user_id):
+        user_index = user_id - 1
+        deleted_user = mock_user_db.pop(user_index)
+        return deleted_user
+    else:
+        raise _UserNotFoundError()
