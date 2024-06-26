@@ -1,7 +1,7 @@
-from fast_api_tutorial.persistence.in_memory_user_repository import (
+from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
+from fast_api_tutorial.persistence.in_memory.in_memory_user_repository import (
     InMemoryUserRepository,
 )
-from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 
 
 class InMemoryUnitOfWork(UnitOfWork):
