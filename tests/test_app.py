@@ -28,7 +28,7 @@ def test_create_valid_user_response_does_not_return_password(
     client, user_repository, user_response, user_request
 ):
     mock_user = user_response(password="123")
-    user_repository.create.return_value = mock_user
+    user_repository.get_from_email.return_value = mock_user
     request = user_request(is_valid=True)
     response = client.post("/users/", json=request).json()
     assert "password" not in response
@@ -83,7 +83,7 @@ def test_update_existing_user_returns_updated_user(
     client, user_repository, user_response, user_request
 ):
     mock_user = user_response()
-    user_repository.update.return_value = mock_user
+    user_repository.get.return_value = mock_user
     response = client.put(f"/users/1/", json=user_request(is_valid=True))
     assert response.json()["username"] == mock_user["username"]
     assert response.json()["id"] == mock_user["id"]

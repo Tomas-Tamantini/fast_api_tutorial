@@ -40,7 +40,9 @@ def get_html():
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)):
     with uow:
-        return uow.user_repository.create(user)
+        uow.user_repository.add(user)
+        uow.commit()
+        return uow.user_repository.get_from_email(user.email)
 
 
 @app.get("/users/", response_model=UserListResponse)
@@ -69,7 +71,9 @@ def update_user(
 ):
     with uow:
         try:
-            return uow.user_repository.update(user_id, user)
+            uow.user_repository.update(user_id, user)
+            uow.commit()
+            return uow.user_repository.get(user_id)
         except NotFoundException:
             raise _UserNotFoundError()
 
