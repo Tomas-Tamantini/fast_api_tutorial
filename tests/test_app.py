@@ -14,22 +14,22 @@ def test_get_html_returns_ok(client):
     assert "Hello world!" in response.text
 
 
-def test_create_invalid_user_returns_unprocessable_entity(client, user_request):
-    response = client.post("/users/", json=user_request(is_valid=False))
+def test_create_invalid_user_returns_unprocessable_entity(client, invalid_user_request):
+    response = client.post("/users/", json=invalid_user_request)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-def test_create_valid_user_returns_created(client, user_request):
-    response = client.post("/users/", json=user_request(is_valid=True))
+def test_create_valid_user_returns_created(client, valid_user_request):
+    response = client.post("/users/", json=valid_user_request)
     assert response.status_code == HTTPStatus.CREATED
 
 
 def test_create_valid_user_response_does_not_return_password(
-    client, user_repository, user_response, user_request
+    client, user_repository, user_response, valid_user_request
 ):
     mock_user = user_response(password="123")
     user_repository.get_from_email.return_value = mock_user
-    request = user_request(is_valid=True)
+    request = valid_user_request
     response = client.post("/users/", json=request).json()
     assert "password" not in response
     assert response["username"] == mock_user["username"]
@@ -74,31 +74,31 @@ def test_get_non_existing_user_returns_not_found(client, user_repository):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_update_existing_user_returns_ok(client, user_request):
-    response = client.put(f"/users/1/", json=user_request(is_valid=True))
+def test_update_existing_user_returns_ok(client, valid_user_request):
+    response = client.put(f"/users/1/", json=valid_user_request)
     assert response.status_code == HTTPStatus.OK
 
 
 def test_update_existing_user_returns_updated_user(
-    client, user_repository, user_response, user_request
+    client, user_repository, user_response, valid_user_request
 ):
     mock_user = user_response()
     user_repository.get.return_value = mock_user
-    response = client.put(f"/users/1/", json=user_request(is_valid=True))
+    response = client.put(f"/users/1/", json=valid_user_request)
     assert response.json()["username"] == mock_user["username"]
     assert response.json()["id"] == mock_user["id"]
 
 
-def test_invalid_user_update_returns_unprocessable_entity(client, user_request):
-    response = client.put(f"/users/1/", json=user_request(is_valid=False))
+def test_invalid_user_update_returns_unprocessable_entity(client, invalid_user_request):
+    response = client.put(f"/users/1/", json=invalid_user_request)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_update_non_existing_user_returns_not_found(
-    client, user_repository, user_request
+    client, user_repository, valid_user_request
 ):
     user_repository.update.side_effect = NotFoundException
-    response = client.put(f"/users/123/", json=user_request(is_valid=True))
+    response = client.put(f"/users/123/", json=valid_user_request)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
