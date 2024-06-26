@@ -24,6 +24,7 @@ addopts = '-p no:warnings'
 [tool.taskipy.tasks]
 run = "fastapi dev fast_api_tutorial/app.py"
 test = "pytest  --cov=fast_api_tutorial -vv"
+coverage = "pytest --cov=fast_api_tutorial --cov-report=html"
 
 [build-system]
 requires = ["poetry-core"]
