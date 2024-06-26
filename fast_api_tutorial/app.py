@@ -1,13 +1,20 @@
 from http import HTTPStatus
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from fast_api_tutorial.schemas import CreateUserRequest, UserResponse, UserListResponse
 from fast_api_tutorial.persistence.in_memory_user_repository import (
     InMemoryUserRepository,
 )
+from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
+from fast_api_tutorial.persistence.in_memory_unit_of_work import InMemoryUnitOfWork
 from fast_api_tutorial.exceptions import NotFoundException
 
 app = FastAPI()
+users_repository = InMemoryUserRepository()
+
+
+def get_unit_of_work() -> UnitOfWork:
+    return InMemoryUnitOfWork(users_repository)
 
 
 @app.get("/")
@@ -30,17 +37,16 @@ def get_html():
     """
 
 
-user_repository = InMemoryUserRepository()
-
-
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(user: CreateUserRequest):
-    return user_repository.create(user)
+    with get_unit_of_work() as uow:
+        return uow.user_repository.create(user)
 
 
 @app.get("/users/", response_model=UserListResponse)
 def get_users():
-    return {"users": user_repository.get_all()}
+    with get_unit_of_work() as uow:
+        return {"users": uow.user_repository.get_all()}
 
 
 class _UserNotFoundError(HTTPException):
@@ -50,23 +56,26 @@ class _UserNotFoundError(HTTPException):
 
 @app.get("/users/{user_id}/", response_model=UserResponse)
 def get_user(user_id: int):
-    try:
-        return user_repository.get(user_id)
-    except NotFoundException:
-        raise _UserNotFoundError()
+    with get_unit_of_work() as uow:
+        try:
+            return uow.user_repository.get(user_id)
+        except NotFoundException:
+            raise _UserNotFoundError()
 
 
 @app.put("/users/{user_id}/", response_model=UserResponse)
 def update_user(user_id: int, user: CreateUserRequest):
-    try:
-        return user_repository.update(user_id, user)
-    except NotFoundException:
-        raise _UserNotFoundError()
+    with get_unit_of_work() as uow:
+        try:
+            return uow.user_repository.update(user_id, user)
+        except NotFoundException:
+            raise _UserNotFoundError()
 
 
 @app.delete("/users/{user_id}/", status_code=HTTPStatus.NO_CONTENT)
 def delete_user(user_id: int):
-    try:
-        user_repository.delete(user_id)
-    except NotFoundException:
-        raise _UserNotFoundError()
+    with get_unit_of_work() as uow:
+        try:
+            uow.user_repository.delete(user_id)
+        except NotFoundException:
+            raise _UserNotFoundError()
