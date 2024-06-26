@@ -118,13 +118,13 @@ def test_update_non_existing_user_returns_not_found(client):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_delete_existing_user_returns_ok(client):
+def test_delete_existing_user_returns_no_content(client):
     user = client.post(
         "/users/", json=_create_user_request(is_valid=True)
     )  # TODO: Remove this line by injecting mock DB
     user_id = user.json()["id"]
     response = client.delete(f"/users/{user_id}/")
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.NO_CONTENT
 
 
 def test_delete_non_existing_user_returns_not_found(client):
