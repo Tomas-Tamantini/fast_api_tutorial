@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fast_api_tutorial.exceptions import NotFoundException
+from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 
 
 def test_read_root_returns_ok(client):
@@ -111,3 +111,21 @@ def test_delete_non_existing_user_returns_not_found(client, user_repository):
     user_repository.delete.side_effect = NotFoundException
     response = client.delete(f"/users/123/")
     assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_creating_user_with_conflicting_field_returns_conflict(
+    client, unit_of_work, valid_user_request
+):
+    unit_of_work.commit.side_effect = DuplicateException(field="Email")
+    response = client.post("/users/", json=valid_user_request)
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json()["detail"] == "Email already in use"
+
+
+def test_updating_user_with_conflicting_field_returns_conflict(
+    client, unit_of_work, valid_user_request
+):
+    unit_of_work.commit.side_effect = DuplicateException(field="Username")
+    response = client.put("/users/1/", json=valid_user_request)
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json()["detail"] == "Username already in use"

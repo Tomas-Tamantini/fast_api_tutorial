@@ -7,7 +7,7 @@ from fast_api_tutorial.persistence.in_memory import (
     InMemoryUnitOfWork,
     InMemoryUserRepository,
 )
-from fast_api_tutorial.exceptions import NotFoundException
+from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 
 app = FastAPI()
 users_repository = InMemoryUserRepository()
@@ -37,23 +37,33 @@ def get_html():
     """
 
 
+class _UserNotFoundError(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
+
+
+class _FieldAlreadyInUseError(HTTPException):
+    def __init__(self, field: str):
+        super().__init__(
+            status_code=HTTPStatus.CONFLICT, detail=f"{field} already in use"
+        )
+
+
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)):
     with uow:
-        uow.user_repository.add(user)
-        uow.commit()
-        return uow.user_repository.get_from_email(user.email)
+        try:
+            uow.user_repository.add(user)
+            uow.commit()
+            return uow.user_repository.get_from_email(user.email)
+        except DuplicateException as e:
+            raise _FieldAlreadyInUseError(e.field)
 
 
 @app.get("/users/", response_model=UserListResponse)
 def get_users(uow: UnitOfWork = Depends(get_unit_of_work)):
     with uow:
         return {"users": uow.user_repository.get_all()}
-
-
-class _UserNotFoundError(HTTPException):
-    def __init__(self):
-        super().__init__(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
 
 
 @app.get("/users/{user_id}/", response_model=UserResponse)
@@ -76,6 +86,8 @@ def update_user(
             return uow.user_repository.get(user_id)
         except NotFoundException:
             raise _UserNotFoundError()
+        except DuplicateException as e:
+            raise _FieldAlreadyInUseError(e.field)
 
 
 @app.delete("/users/{user_id}/", status_code=HTTPStatus.NO_CONTENT)

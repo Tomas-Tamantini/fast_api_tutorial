@@ -1,5 +1,5 @@
 from fast_api_tutorial.schemas import CreateUserRequest, UserDB
-from fast_api_tutorial.exceptions import NotFoundException
+from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 
 
 class InMemoryUserRepository:
@@ -13,6 +13,11 @@ class InMemoryUserRepository:
         return index
 
     def add(self, entity: CreateUserRequest) -> None:
+        for user in self._users:
+            if user.email == entity.email:
+                raise DuplicateException(field="Email")
+            elif user.username == entity.username:
+                raise DuplicateException(field="Username")
         self._users.append(UserDB(id=self._next_id, **entity.model_dump()))
 
     def get_from_email(self, email: str) -> UserDB:
