@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class _UserPublicData(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, from_attributes=True)
 
     username: str
     email: EmailStr
