@@ -1,20 +1,23 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import HTMLResponse
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from fast_api_tutorial.schemas import CreateUserRequest, UserResponse, UserListResponse
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
-from fast_api_tutorial.persistence.in_memory import (
-    InMemoryUnitOfWork,
-    InMemoryUserRepository,
-)
+from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
 from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
+from fast_api_tutorial.settings import Settings
+
 
 app = FastAPI()
-users_repository = InMemoryUserRepository()
 
 
 def get_unit_of_work() -> UnitOfWork:
-    return InMemoryUnitOfWork(users_repository)
+    db_url = Settings().DATABASE_URL
+    engine = create_engine(db_url)
+    session_factory = sessionmaker(bind=engine)
+    return RelationalUnitOfWork(session_factory)
 
 
 @app.get("/")
