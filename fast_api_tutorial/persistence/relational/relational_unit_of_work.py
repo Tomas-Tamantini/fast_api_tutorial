@@ -1,5 +1,7 @@
 from typing import Callable
 from sqlalchemy.orm.session import Session
+from sqlalchemy.exc import IntegrityError
+from fast_api_tutorial.exceptions import DuplicateException
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational.relational_user_repository import (
     RelationalUserRepository,
@@ -29,7 +31,12 @@ class RelationalUnitOfWork(UnitOfWork):
         self._session.close()
 
     def commit(self) -> None:
-        self._session.commit()
+        try:
+            self._session.commit()
+        except IntegrityError as e:
+            self.rollback()
+            field = str(e.orig).split(".")[-1].strip()
+            raise DuplicateException(field)
 
     def rollback(self) -> None:
         self._session.rollback()
