@@ -33,6 +33,11 @@ class InMemoryUserRepository:
     def get_all(self) -> list[UserDB]:
         return self._users
 
+    def get_paginated(self, page: int, size: int) -> list[UserDB]:
+        start = (page - 1) * size
+        end = start + size
+        return self._users[start:end]
+
     def get(self, id: int) -> UserDB:
         user_index = self._id_to_index(id)
         return self._users[user_index]

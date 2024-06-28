@@ -24,6 +24,11 @@ class RelationalUserRepository:
         users = self._session.execute(select(User)).scalars().all()
         return [UserDB.model_validate(user) for user in users]
 
+    def get_paginated(self, page: int, size: int) -> list[UserDB]:
+        offset = (page - 1) * size
+        users = self._session.scalars(select(User).limit(size).offset(offset))
+        return [UserDB.model_validate(user) for user in users]
+
     def get(self, id: int) -> UserDB:
         result = self._session.scalar(select(User).where(User.id == id))
         if result is None:

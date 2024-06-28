@@ -41,16 +41,17 @@ def test_get_users_returns_ok(client):
     assert response.status_code == HTTPStatus.OK
 
 
-def test_get_users_returns_all_users(client, user_repository, user_response):
-    user_repository.get_all.return_value = [
+def test_get_users_returns_paginated_users(client, user_repository, user_response):
+    user_repository.get_paginated.return_value = [
         user_response(id=123),
         user_response(id=321),
     ]
-    response = client.get("/users/")
+    response = client.get("/users/", params={"page": 1, "size": 2})
     assert "users" in response.json()
     users = response.json()["users"]
     assert [user["id"] for user in users] == [123, 321]
     assert not any("password" in user for user in users)
+    assert user_repository.get_paginated.call_args[1] == {"page": 1, "size": 2}
 
 
 def test_get_user_returns_ok(client):

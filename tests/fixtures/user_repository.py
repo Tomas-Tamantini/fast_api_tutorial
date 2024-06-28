@@ -9,5 +9,6 @@ def user_repository(user_response):
     repository.get_from_email.return_value = user_response()
     repository.get.return_value = user_response()
     repository.get_all.return_value = list()
+    repository.get_paginated.return_value = list()
     repository.delete.return_value = None
     return repository

@@ -64,9 +64,11 @@ def create_user(user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_w
 
 
 @app.get("/users/", response_model=UserListResponse)
-def get_users(uow: UnitOfWork = Depends(get_unit_of_work)):
+def get_users(
+    page: int = 1, size: int = 5, uow: UnitOfWork = Depends(get_unit_of_work)
+):
     with uow:
-        return {"users": uow.user_repository.get_all()}
+        return {"users": uow.user_repository.get_paginated(page=page, size=size)}
 
 
 @app.get("/users/{user_id}/", response_model=UserResponse)
