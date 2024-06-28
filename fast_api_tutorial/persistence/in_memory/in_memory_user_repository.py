@@ -35,7 +35,9 @@ class InMemoryUserRepository:
 
     def get_paginated(self, page: int, size: int) -> list[UserDB]:
         start = (page - 1) * size
-        end = start + size
+        if start >= len(self._users):
+            return []
+        end = min(start + size, len(self._users))
         return self._users[start:end]
 
     def get(self, id: int) -> UserDB:
