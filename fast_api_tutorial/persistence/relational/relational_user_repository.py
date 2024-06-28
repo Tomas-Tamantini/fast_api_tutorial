@@ -21,7 +21,7 @@ class RelationalUserRepository:
             return UserDB.model_validate(result)
 
     def get_all(self) -> list[UserDB]:
-        users = self._session.execute(select(User)).scalars().all()
+        users = self._session.scalars(select(User))
         return [UserDB.model_validate(user) for user in users]
 
     def get_paginated(self, page: int, size: int) -> list[UserDB]:
