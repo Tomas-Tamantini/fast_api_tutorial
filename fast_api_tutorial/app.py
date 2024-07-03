@@ -8,6 +8,7 @@ from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
 from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 from fast_api_tutorial.settings import Settings
+from fast_api_tutorial.security import get_password_hash
 
 
 app = FastAPI()
@@ -18,6 +19,14 @@ def get_unit_of_work() -> UnitOfWork:
     engine = create_engine(db_url)
     session_factory = sessionmaker(bind=engine)
     return RelationalUnitOfWork(session_factory)
+
+
+def _hashed_password_user(user: CreateUserRequest) -> CreateUserRequest:
+    return CreateUserRequest(
+        username=user.username,
+        email=user.email,
+        password=get_password_hash(user.password),
+    )
 
 
 @app.get("/")
@@ -54,6 +63,7 @@ class _FieldAlreadyInUseError(HTTPException):
 
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)):
+    user = _hashed_password_user(user)
     with uow:
         try:
             uow.user_repository.add(user)
@@ -84,6 +94,7 @@ def get_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
 def update_user(
     user_id: int, user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)
 ):
+    user = _hashed_password_user(user)
     with uow:
         try:
             uow.user_repository.update(user_id, user)

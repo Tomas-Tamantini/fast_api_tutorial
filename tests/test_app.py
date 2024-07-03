@@ -24,6 +24,14 @@ def test_create_valid_user_returns_created(client, valid_user_request):
     assert response.status_code == HTTPStatus.CREATED
 
 
+def test_create_valid_user_hashes_password_before_saving(
+    client, user_repository, user_request
+):
+    request = user_request(password="123")
+    client.post("/users/", json=request.dict())
+    assert user_repository.add.call_args[0][0].password != "123"
+
+
 def test_create_valid_user_response_does_not_return_password(
     client, user_repository, user_response, valid_user_request
 ):
@@ -88,6 +96,14 @@ def test_update_existing_user_returns_updated_user(
     response = client.put(f"/users/1/", json=valid_user_request)
     assert response.json()["username"] == mock_user["username"]
     assert response.json()["id"] == mock_user["id"]
+
+
+def test_update_existing_user_hashes_password_before_saving(
+    client, user_repository, user_request
+):
+    request = user_request(password="123")
+    client.put(f"/users/1/", json=request.dict())
+    assert user_repository.update.call_args[0][1].password != "123"
 
 
 def test_invalid_user_update_returns_unprocessable_entity(client, invalid_user_request):
