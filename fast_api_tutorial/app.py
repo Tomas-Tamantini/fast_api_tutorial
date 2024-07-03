@@ -4,12 +4,22 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fast_api_tutorial.schemas import CreateUserRequest, UserResponse, UserListResponse
+from fast_api_tutorial.schemas import (
+    CreateUserRequest,
+    UserResponse,
+    UserListResponse,
+    Token,
+)
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
 from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 from fast_api_tutorial.settings import Settings
-from fast_api_tutorial.security import PasswordHasher, PwdLibHasher
+from fast_api_tutorial.security import (
+    PasswordHasher,
+    PwdLibHasher,
+    JwtBuilderProtocol,
+    JwtBuilder,
+)
 
 
 app = FastAPI()
@@ -24,6 +34,10 @@ def get_unit_of_work() -> UnitOfWork:
 
 def get_password_hasher() -> PasswordHasher:
     return PwdLibHasher()
+
+
+def get_jwt_builder() -> JwtBuilderProtocol:
+    return JwtBuilder()
 
 
 @app.get("/")
@@ -126,11 +140,12 @@ def delete_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
             raise _UserNotFoundError()
 
 
-@app.post("/token")
+@app.post("/token", response_model=Token)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     uow: UnitOfWork = Depends(get_unit_of_work),
     password_hasher: PasswordHasher = Depends(get_password_hasher),
+    jwt_builder: JwtBuilderProtocol = Depends(get_jwt_builder),
 ):
     with uow:
         try:
@@ -140,4 +155,4 @@ def login(
     if not password_hasher.verify_password(form_data.password, user.password):
         raise _InvalidLoginError()
     else:
-        raise NotImplementedError("Not implemented")
+        return jwt_builder.create_token(user.email)

@@ -1,4 +1,5 @@
 import pytest
+from fast_api_tutorial.schemas import UserDB
 
 
 @pytest.fixture
@@ -8,7 +9,7 @@ def user_response():
         username: str = "test",
         email: str = "a@b.com",
         password: str = "123",
-    ) -> dict:
-        return {"id": id, "username": username, "email": email, "password": password}
+    ) -> UserDB:
+        return UserDB(id=id, username=username, email=email, password=password)
 
     return _user_response

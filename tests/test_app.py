@@ -42,8 +42,8 @@ def test_create_valid_user_response_does_not_return_password(
     request = valid_user_request
     response = client.post("/users/", json=request).json()
     assert "password" not in response
-    assert response["username"] == mock_user["username"]
-    assert response["email"] == mock_user["email"]
+    assert response["username"] == mock_user.username
+    assert response["email"] == mock_user.email
 
 
 def test_get_users_returns_ok(client):
@@ -73,9 +73,9 @@ def test_get_user_returns_user(client, user_repository, user_response):
     mock_user = user_response()
     user_repository.get.return_value = mock_user
     response = client.get(f"/users/1/")
-    assert response.json()["id"] == mock_user["id"]
-    assert response.json()["username"] == mock_user["username"]
-    assert response.json()["email"] == mock_user["email"]
+    assert response.json()["id"] == mock_user.id
+    assert response.json()["username"] == mock_user.username
+    assert response.json()["email"] == mock_user.email
     assert "password" not in response.json()
 
 
@@ -96,8 +96,8 @@ def test_update_existing_user_returns_updated_user(
     mock_user = user_response()
     user_repository.get.return_value = mock_user
     response = client.put(f"/users/1/", json=valid_user_request)
-    assert response.json()["username"] == mock_user["username"]
-    assert response.json()["id"] == mock_user["id"]
+    assert response.json()["username"] == mock_user.username
+    assert response.json()["id"] == mock_user.id
 
 
 def test_update_existing_user_hashes_password_before_saving(
@@ -160,12 +160,21 @@ def test_login_with_bad_username_returns_bad_request(
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_login_with_bad_password_returns_bad_request(
-    client, user_repository, password_hasher
-):
-    user_repository.get_from_email.return_value = UserDB(
-        id=1, username="username", email="a@b.com", password="password"
-    )
+def test_login_with_bad_password_returns_bad_request(client, password_hasher):
     password_hasher.verify_password.return_value = False
     response = client.post("/token", data={"username": "email", "password": "bad"})
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_successful_login_returns_jwt(
+    client, user_repository, user_response, password_hasher, jwt_builder
+):
+    password_hasher.verify_password.return_value = True
+    fake_user = user_response(email="a@b.com")
+    user_repository.get_from_email.return_value = fake_user
+    fake_token = {"access_token": "123", "token_type": "bearer"}
+    jwt_builder.create_token.return_value = fake_token
+    response = client.post("/token", data={"username": "email", "password": "password"})
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == fake_token
+    assert jwt_builder.create_token.call_args[0][0] == "a@b.com"
