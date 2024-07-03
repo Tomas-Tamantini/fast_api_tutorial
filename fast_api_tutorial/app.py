@@ -26,17 +26,6 @@ def get_password_hasher() -> PasswordHasher:
     return PwdLibHasher()
 
 
-def _hashed_password_user(
-    user: CreateUserRequest, password_hasher: PasswordHasher
-) -> CreateUserRequest:
-    # TODO: Make this a method of CreateUserRequest
-    return CreateUserRequest(
-        username=user.username,
-        email=user.email,
-        password=password_hasher.hash_password(user.password),
-    )
-
-
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
@@ -82,7 +71,7 @@ def create_user(
     uow: UnitOfWork = Depends(get_unit_of_work),
     password_hasher: PasswordHasher = Depends(get_password_hasher),
 ):
-    user = _hashed_password_user(user, password_hasher)
+    user = user.with_hashed_password(hash_method=password_hasher.hash_password)
     with uow:
         try:
             uow.user_repository.add(user)
@@ -116,7 +105,7 @@ def update_user(
     uow: UnitOfWork = Depends(get_unit_of_work),
     password_hasher: PasswordHasher = Depends(get_password_hasher),
 ):
-    user = _hashed_password_user(user, password_hasher)
+    user = user.with_hashed_password(hash_method=password_hasher.hash_password)
     with uow:
         try:
             uow.user_repository.update(user_id, user)

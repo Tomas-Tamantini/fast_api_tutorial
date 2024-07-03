@@ -1,3 +1,4 @@
+from typing import Callable
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 
@@ -10,6 +11,15 @@ class _UserPublicData(BaseModel):
 
 class CreateUserRequest(_UserPublicData):
     password: str
+
+    def with_hashed_password(
+        self, hash_method: Callable[[str], str]
+    ) -> "CreateUserRequest":
+        return CreateUserRequest(
+            username=self.username,
+            email=self.email,
+            password=hash_method(self.password),
+        )
 
 
 class UserDB(CreateUserRequest):
