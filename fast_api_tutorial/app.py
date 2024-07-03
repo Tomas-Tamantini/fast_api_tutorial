@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +9,7 @@ from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
 from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
 from fast_api_tutorial.settings import Settings
-from fast_api_tutorial.security import get_password_hash
+from fast_api_tutorial.security import PasswordHasher, PwdLibHasher
 
 
 app = FastAPI()
@@ -21,11 +22,18 @@ def get_unit_of_work() -> UnitOfWork:
     return RelationalUnitOfWork(session_factory)
 
 
-def _hashed_password_user(user: CreateUserRequest) -> CreateUserRequest:
+def get_password_hasher() -> PasswordHasher:
+    return PwdLibHasher()
+
+
+def _hashed_password_user(
+    user: CreateUserRequest, password_hasher: PasswordHasher
+) -> CreateUserRequest:
+    # TODO: Make this a method of CreateUserRequest
     return CreateUserRequest(
         username=user.username,
         email=user.email,
-        password=get_password_hash(user.password),
+        password=password_hasher.hash_password(user.password),
     )
 
 
@@ -61,9 +69,20 @@ class _FieldAlreadyInUseError(HTTPException):
         )
 
 
+class _InvalidLoginError(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=HTTPStatus.UNAUTHORIZED, detail="Wrong email or password"
+        )
+
+
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
-def create_user(user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)):
-    user = _hashed_password_user(user)
+def create_user(
+    user: CreateUserRequest,
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
+):
+    user = _hashed_password_user(user, password_hasher)
     with uow:
         try:
             uow.user_repository.add(user)
@@ -92,9 +111,12 @@ def get_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
 
 @app.put("/users/{user_id}/", response_model=UserResponse)
 def update_user(
-    user_id: int, user: CreateUserRequest, uow: UnitOfWork = Depends(get_unit_of_work)
+    user_id: int,
+    user: CreateUserRequest,
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
 ):
-    user = _hashed_password_user(user)
+    user = _hashed_password_user(user, password_hasher)
     with uow:
         try:
             uow.user_repository.update(user_id, user)
@@ -113,3 +135,20 @@ def delete_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
             uow.user_repository.delete(user_id)
         except NotFoundException:
             raise _UserNotFoundError()
+
+
+@app.post("/token")
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
+):
+    with uow:
+        try:
+            user = uow.user_repository.get_from_email(form_data.username)
+        except NotFoundException:
+            raise _InvalidLoginError()
+    if not password_hasher.verify_password(form_data.password, user.password):
+        raise _InvalidLoginError()
+    else:
+        return {"access_token": user.email, "token_type": "bearer"}

@@ -25,11 +25,12 @@ def test_create_valid_user_returns_created(client, valid_user_request):
 
 
 def test_create_valid_user_hashes_password_before_saving(
-    client, user_repository, user_request
+    client, user_repository, user_request, password_hasher
 ):
     request = user_request(password="123")
+    password_hasher.hash_password.return_value = "hashed_password"
     client.post("/users/", json=request.dict())
-    assert user_repository.add.call_args[0][0].password != "123"
+    assert user_repository.add.call_args[0][0].password == "hashed_password"
 
 
 def test_create_valid_user_response_does_not_return_password(
@@ -99,11 +100,12 @@ def test_update_existing_user_returns_updated_user(
 
 
 def test_update_existing_user_hashes_password_before_saving(
-    client, user_repository, user_request
+    client, user_repository, user_request, password_hasher
 ):
     request = user_request(password="123")
+    password_hasher.hash_password.return_value = "hashed_password"
     client.put(f"/users/1/", json=request.dict())
-    assert user_repository.update.call_args[0][1].password != "123"
+    assert user_repository.update.call_args[0][1].password == "hashed_password"
 
 
 def test_invalid_user_update_returns_unprocessable_entity(client, invalid_user_request):
