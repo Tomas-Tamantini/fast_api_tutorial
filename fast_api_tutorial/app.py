@@ -72,7 +72,7 @@ class _FieldAlreadyInUseError(HTTPException):
 class _InvalidLoginError(HTTPException):
     def __init__(self):
         super().__init__(
-            status_code=HTTPStatus.UNAUTHORIZED, detail="Wrong email or password"
+            status_code=HTTPStatus.BAD_REQUEST, detail="Wrong email or password"
         )
 
 
@@ -151,4 +151,4 @@ def login(
     if not password_hasher.verify_password(form_data.password, user.password):
         raise _InvalidLoginError()
     else:
-        return {"access_token": user.email, "token_type": "bearer"}
+        raise NotImplementedError("Not implemented")

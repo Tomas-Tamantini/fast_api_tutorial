@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
+from fast_api_tutorial.schemas import UserDB
 
 
 def test_read_root_returns_ok(client):
@@ -148,3 +149,23 @@ def test_updating_user_with_conflicting_field_returns_conflict(
     response = client.put("/users/1/", json=valid_user_request)
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json()["detail"] == "Username already in use"
+
+
+def test_login_with_bad_username_returns_bad_request(
+    client, user_repository, password_hasher
+):
+    user_repository.get_from_email.side_effect = NotFoundException
+    password_hasher.verify_password.return_value = True
+    response = client.post("/token", data={"username": "bad", "password": "bad"})
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_login_with_bad_password_returns_bad_request(
+    client, user_repository, password_hasher
+):
+    user_repository.get_from_email.return_value = UserDB(
+        id=1, username="username", email="a@b.com", password="password"
+    )
+    password_hasher.verify_password.return_value = False
+    response = client.post("/token", data={"username": "email", "password": "bad"})
+    assert response.status_code == HTTPStatus.BAD_REQUEST
