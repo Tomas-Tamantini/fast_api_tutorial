@@ -31,3 +31,12 @@ class WrongUsernameOrPasswordError(HTTPException):
         super().__init__(
             status_code=HTTPStatus.BAD_REQUEST, detail="Wrong email or password"
         )
+
+
+class CredentialsError(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

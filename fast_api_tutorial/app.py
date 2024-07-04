@@ -1,10 +1,11 @@
 from http import HTTPStatus
 from fastapi import FastAPI, Depends
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.responses import HTMLResponse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fast_api_tutorial.schemas import (
+    User,
     CreateUserRequest,
     UserResponse,
     UserListResponse,
@@ -18,6 +19,8 @@ from fast_api_tutorial.exceptions import (
     UserNotFoundError,
     FieldAlreadyInUseError,
     WrongUsernameOrPasswordError,
+    BadTokenError,
+    CredentialsError,
 )
 from fast_api_tutorial.settings import Settings
 from fast_api_tutorial.security import (
@@ -47,6 +50,19 @@ def get_jwt_builder() -> JwtBuilderProtocol:
         secret=Settings().JWT_SECRET,
         expiration_minutes=Settings().JWT_EXPIRATION_MINUTES,
     )
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+async def get_current_user(
+    jwt_builder: JwtBuilderProtocol = Depends(get_jwt_builder),
+    token: str = Depends(oauth2_scheme),
+) -> User:
+    try:
+        email = jwt_builder.get_token_subject(token)
+    except BadTokenError:
+        raise CredentialsError()
 
 
 @app.get("/")
@@ -108,6 +124,7 @@ def update_user(
     user: CreateUserRequest,
     uow: UnitOfWork = Depends(get_unit_of_work),
     password_hasher: PasswordHasher = Depends(get_password_hasher),
+    current_user: User = Depends(get_current_user),
 ):
     user = user.with_hashed_password(hash_method=password_hasher.hash_password)
     with uow:

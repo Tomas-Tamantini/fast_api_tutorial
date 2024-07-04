@@ -10,4 +10,5 @@ def jwt_builder():
     builder.create_token.return_value = Token(
         access_token="access_token", token_type="bearer"
     )
+    builder.get_token_subject.return_value = "bearer@email.com"
     return builder
