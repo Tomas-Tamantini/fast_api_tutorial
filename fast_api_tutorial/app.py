@@ -46,7 +46,6 @@ def get_jwt_builder() -> JwtBuilderProtocol:
     return JwtBuilder(
         secret=Settings().JWT_SECRET,
         expiration_minutes=Settings().JWT_EXPIRATION_MINUTES,
-        algorithm="HS256",
     )
 
 

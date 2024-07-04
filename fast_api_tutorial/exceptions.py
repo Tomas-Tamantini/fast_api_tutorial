@@ -5,6 +5,9 @@ from fastapi import HTTPException
 class NotFoundError(Exception): ...
 
 
+class BadTokenError(Exception): ...
+
+
 class DuplicateFieldError(Exception):
     def __init__(self, field: str) -> None:
         self.field = field
