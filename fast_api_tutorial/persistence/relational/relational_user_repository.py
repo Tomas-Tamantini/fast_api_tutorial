@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fast_api_tutorial.schemas import CreateUserRequest, UserDB
 from fast_api_tutorial.persistence.relational.user_model import User
-from fast_api_tutorial.exceptions import NotFoundException
+from fast_api_tutorial.exceptions import NotFoundError
 
 
 class RelationalUserRepository:
@@ -16,7 +16,7 @@ class RelationalUserRepository:
     def get_from_email(self, email: str) -> UserDB:
         result = self._session.scalar(select(User).where(User.email == email))
         if result is None:
-            raise NotFoundException()
+            raise NotFoundError()
         else:
             return UserDB.model_validate(result)
 
@@ -32,7 +32,7 @@ class RelationalUserRepository:
     def get(self, id: int) -> UserDB:
         result = self._session.scalar(select(User).where(User.id == id))
         if result is None:
-            raise NotFoundException()
+            raise NotFoundError()
         else:
             return UserDB.model_validate(result)
 
@@ -41,9 +41,9 @@ class RelationalUserRepository:
             self._session.query(User).filter(User.id == id).update(entity.model_dump())
         )
         if updated_count == 0:
-            raise NotFoundException()
+            raise NotFoundError()
 
     def delete(self, id: int) -> None:
         deleted_count = self._session.query(User).filter(User.id == id).delete()
         if deleted_count == 0:
-            raise NotFoundException()
+            raise NotFoundError()

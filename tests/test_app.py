@@ -1,6 +1,5 @@
 from http import HTTPStatus
-from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
-from fast_api_tutorial.schemas import UserDB
+from fast_api_tutorial.exceptions import NotFoundError, DuplicateFieldError
 
 
 def test_read_root_returns_ok(client):
@@ -80,7 +79,7 @@ def test_get_user_returns_user(client, user_repository, user_response):
 
 
 def test_get_non_existing_user_returns_not_found(client, user_repository):
-    user_repository.get.side_effect = NotFoundException
+    user_repository.get.side_effect = NotFoundError
     response = client.get(f"/users/123/")
     assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -117,7 +116,7 @@ def test_invalid_user_update_returns_unprocessable_entity(client, invalid_user_r
 def test_update_non_existing_user_returns_not_found(
     client, user_repository, valid_user_request
 ):
-    user_repository.update.side_effect = NotFoundException
+    user_repository.update.side_effect = NotFoundError
     response = client.put(f"/users/123/", json=valid_user_request)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -128,7 +127,7 @@ def test_delete_existing_user_returns_no_content(client):
 
 
 def test_delete_non_existing_user_returns_not_found(client, user_repository):
-    user_repository.delete.side_effect = NotFoundException
+    user_repository.delete.side_effect = NotFoundError
     response = client.delete(f"/users/123/")
     assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -136,7 +135,7 @@ def test_delete_non_existing_user_returns_not_found(client, user_repository):
 def test_creating_user_with_conflicting_field_returns_conflict(
     client, unit_of_work, valid_user_request
 ):
-    unit_of_work.commit.side_effect = DuplicateException(field="Email")
+    unit_of_work.commit.side_effect = DuplicateFieldError(field="Email")
     response = client.post("/users/", json=valid_user_request)
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json()["detail"] == "Email already in use"
@@ -145,7 +144,7 @@ def test_creating_user_with_conflicting_field_returns_conflict(
 def test_updating_user_with_conflicting_field_returns_conflict(
     client, unit_of_work, valid_user_request
 ):
-    unit_of_work.commit.side_effect = DuplicateException(field="Username")
+    unit_of_work.commit.side_effect = DuplicateFieldError(field="Username")
     response = client.put("/users/1/", json=valid_user_request)
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json()["detail"] == "Username already in use"
@@ -154,7 +153,7 @@ def test_updating_user_with_conflicting_field_returns_conflict(
 def test_login_with_bad_username_returns_bad_request(
     client, user_repository, password_hasher
 ):
-    user_repository.get_from_email.side_effect = NotFoundException
+    user_repository.get_from_email.side_effect = NotFoundError
     password_hasher.verify_password.return_value = True
     response = client.post("/token", data={"username": "bad", "password": "bad"})
     assert response.status_code == HTTPStatus.BAD_REQUEST

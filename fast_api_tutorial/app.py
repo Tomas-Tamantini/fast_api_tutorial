@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse
 from sqlalchemy import create_engine
@@ -12,7 +12,13 @@ from fast_api_tutorial.schemas import (
 )
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
-from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
+from fast_api_tutorial.exceptions import (
+    NotFoundError,
+    DuplicateFieldError,
+    UserNotFoundError,
+    FieldAlreadyInUseError,
+    WrongUsernameOrPasswordError,
+)
 from fast_api_tutorial.settings import Settings
 from fast_api_tutorial.security import (
     PasswordHasher,
@@ -65,25 +71,6 @@ def get_html():
     """
 
 
-class _UserNotFoundError(HTTPException):
-    def __init__(self):
-        super().__init__(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
-
-
-class _FieldAlreadyInUseError(HTTPException):
-    def __init__(self, field: str):
-        super().__init__(
-            status_code=HTTPStatus.CONFLICT, detail=f"{field} already in use"
-        )
-
-
-class _InvalidLoginError(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Wrong email or password"
-        )
-
-
 @app.post("/users/", status_code=HTTPStatus.CREATED, response_model=UserResponse)
 def create_user(
     user: CreateUserRequest,
@@ -96,8 +83,8 @@ def create_user(
             uow.user_repository.add(user)
             uow.commit()
             return uow.user_repository.get_from_email(user.email)
-        except DuplicateException as e:
-            raise _FieldAlreadyInUseError(e.field)
+        except DuplicateFieldError as e:
+            raise FieldAlreadyInUseError(e.field)
 
 
 @app.get("/users/", response_model=UserListResponse)
@@ -113,8 +100,8 @@ def get_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
     with uow:
         try:
             return uow.user_repository.get(user_id)
-        except NotFoundException:
-            raise _UserNotFoundError()
+        except NotFoundError:
+            raise UserNotFoundError()
 
 
 @app.put("/users/{user_id}/", response_model=UserResponse)
@@ -130,10 +117,10 @@ def update_user(
             uow.user_repository.update(user_id, user)
             uow.commit()
             return uow.user_repository.get(user_id)
-        except NotFoundException:
-            raise _UserNotFoundError()
-        except DuplicateException as e:
-            raise _FieldAlreadyInUseError(e.field)
+        except NotFoundError:
+            raise UserNotFoundError()
+        except DuplicateFieldError as e:
+            raise FieldAlreadyInUseError(e.field)
 
 
 @app.delete("/users/{user_id}/", status_code=HTTPStatus.NO_CONTENT)
@@ -141,8 +128,8 @@ def delete_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
     with uow:
         try:
             uow.user_repository.delete(user_id)
-        except NotFoundException:
-            raise _UserNotFoundError()
+        except NotFoundError:
+            raise UserNotFoundError()
 
 
 @app.post("/token", response_model=Token)
@@ -155,9 +142,9 @@ def login(
     with uow:
         try:
             user = uow.user_repository.get_from_email(form_data.username)
-        except NotFoundException:
-            raise _InvalidLoginError()
+        except NotFoundError:
+            raise WrongUsernameOrPasswordError()
     if not password_hasher.verify_password(form_data.password, user.password):
-        raise _InvalidLoginError()
+        raise WrongUsernameOrPasswordError()
     else:
         return jwt_builder.create_token(user.email)

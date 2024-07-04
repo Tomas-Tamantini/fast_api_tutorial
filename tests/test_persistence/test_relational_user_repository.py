@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import select
 from fast_api_tutorial.persistence.relational import RelationalUserRepository, User
-from fast_api_tutorial.exceptions import NotFoundException, DuplicateException
+from fast_api_tutorial.exceptions import NotFoundError
 
 
 @pytest.mark.integration
@@ -18,7 +18,7 @@ def test_create_user_saves_it_to_db(session, user_request):
 @pytest.mark.integration
 def test_getting_user_not_in_db_raises_not_found_error(session):
     repository = RelationalUserRepository(session)
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         repository.get_from_email("a@b.com")
 
 
@@ -34,7 +34,7 @@ def test_getting_user_from_db_with_valid_email_returns_user(session, user_reques
 @pytest.mark.integration
 def test_getting_user_by_id_not_in_db_raises_not_found_error(session):
     repository = RelationalUserRepository(session)
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         repository.get(id=1)
 
 
@@ -72,7 +72,7 @@ def test_get_paginated_returns_users_in_page(session, user_request):
 @pytest.mark.integration
 def test_update_user_not_in_db_raises_not_found_error(session, user_request):
     repository = RelationalUserRepository(session)
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         repository.update(id=1, entity=user_request())
 
 
@@ -94,7 +94,7 @@ def test_update_user_in_db_updates_fields(session, user_request):
 @pytest.mark.integration
 def test_delete_user_not_in_db_raises_not_found_error(session):
     repository = RelationalUserRepository(session)
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         repository.delete(id=1)
 
 
@@ -105,5 +105,5 @@ def test_delete_user_in_db_removes_it(session, user_request):
     session.commit()
     repository.delete(id=1)
     session.commit()
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundError):
         repository.get(id=1)
