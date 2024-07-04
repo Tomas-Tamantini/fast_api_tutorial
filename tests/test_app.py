@@ -141,14 +141,20 @@ def test_update_non_existing_user_returns_not_found(
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
+def _make_delete_request(client, user_id: int = 1, token: str = "good_token"):
+    return client.delete(
+        f"/users/{user_id}/", headers={"Authorization": f"Bearer {token}"}
+    )
+
+
 def test_delete_existing_user_returns_no_content(client):
-    response = client.delete("/users/1/")
+    response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.NO_CONTENT
 
 
 def test_delete_non_existing_user_returns_not_found(client, user_repository):
     user_repository.delete.side_effect = NotFoundError
-    response = client.delete("/users/123/")
+    response = _make_delete_request(client, user_id=1)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
@@ -225,4 +231,33 @@ def test_update_user_returns_forbidden_if_user_not_trying_to_update_other_accoun
         id=bearer_id, username="user", email="a@b.com", password="123"
     )
     response = _make_put_request(client, user_id=update_id)
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_delete_user_returns_unauthorized_if_could_not_decode_token(
+    client, jwt_builder
+):
+    jwt_builder.get_token_subject.side_effect = BadTokenError
+    response = _make_delete_request(client, token="bad_token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert jwt_builder.get_token_subject.call_args[0][0] == "bad_token"
+
+
+def test_delete_user_returns_unauthorized_if_user_not_in_database(
+    client, user_repository
+):
+    user_repository.get_from_email.side_effect = NotFoundError
+    response = _make_delete_request(client)
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+
+def test_delete_user_returns_forbidden_if_user_not_trying_to_delete_other_account(
+    client, user_repository
+):
+    bearer_id = 123
+    delete_id = 321
+    user_repository.get_from_email.return_value = User(
+        id=bearer_id, username="user", email="a@b.com", password="123"
+    )
+    response = _make_delete_request(client, user_id=delete_id)
     assert response.status_code == HTTPStatus.FORBIDDEN

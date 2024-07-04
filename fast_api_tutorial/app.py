@@ -150,7 +150,16 @@ def update_user(
 
 
 @app.delete("/users/{user_id}/", status_code=HTTPStatus.NO_CONTENT)
-def delete_user(user_id: int, uow: UnitOfWork = Depends(get_unit_of_work)):
+def delete_user(
+    user_id: int,
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="Not enough permissions to delete this user.",
+        )
     with uow:
         try:
             uow.user_repository.delete(user_id)
