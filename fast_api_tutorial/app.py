@@ -163,6 +163,7 @@ def delete_user(
     with uow:
         try:
             uow.user_repository.delete(user_id)
+            uow.commit()
         except NotFoundError:
             raise UserNotFoundError()
 
