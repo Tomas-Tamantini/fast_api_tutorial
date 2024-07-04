@@ -43,11 +43,10 @@ def get_password_hasher() -> PasswordHasher:
 
 
 def get_jwt_builder() -> JwtBuilderProtocol:
-    # TODO: Extract secret, algorithm, and expiration_minutes to settings
     return JwtBuilder(
-        secret="secret",
+        secret=Settings().JWT_SECRET,
+        expiration_minutes=Settings().JWT_EXPIRATION_MINUTES,
         algorithm="HS256",
-        expiration_minutes=30,
     )
 
 
