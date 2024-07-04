@@ -9,6 +9,19 @@ class _UserPublicData(BaseModel):
     email: EmailStr
 
 
+class User(_UserPublicData):
+    id: int
+    password: str
+
+
+class UserResponse(_UserPublicData):
+    id: int
+
+
+class UserListResponse(BaseModel):
+    users: list[UserResponse]
+
+
 class CreateUserRequest(_UserPublicData):
     password: str
 
@@ -20,15 +33,3 @@ class CreateUserRequest(_UserPublicData):
             email=self.email,
             password=hash_method(self.password),
         )
-
-
-class User(CreateUserRequest):
-    id: int
-
-
-class UserResponse(_UserPublicData):
-    id: int
-
-
-class UserListResponse(BaseModel):
-    users: list[UserResponse]
