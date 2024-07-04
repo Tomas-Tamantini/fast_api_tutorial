@@ -22,7 +22,7 @@ class CreateUserRequest(_UserPublicData):
         )
 
 
-class UserDB(CreateUserRequest):
+class User(CreateUserRequest):
     id: int
 
 

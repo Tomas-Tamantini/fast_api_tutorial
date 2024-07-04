@@ -1,2 +1,2 @@
-from .user import CreateUserRequest, UserDB, UserResponse, UserListResponse
+from .user import CreateUserRequest, User, UserResponse, UserListResponse
 from .token import Token

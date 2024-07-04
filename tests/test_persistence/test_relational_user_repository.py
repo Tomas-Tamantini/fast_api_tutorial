@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy import select
-from fast_api_tutorial.persistence.relational import RelationalUserRepository, User
+from fast_api_tutorial.persistence.relational import RelationalUserRepository, UserDB
 from fast_api_tutorial.exceptions import NotFoundError
 
 
@@ -9,7 +9,7 @@ def test_create_user_saves_it_to_db(session, user_request):
     repository = RelationalUserRepository(session)
     repository.add(user_request(username="test", email="a@b.com"))
     session.commit()
-    user = session.scalar(select(User).where(User.username == "test"))
+    user = session.scalar(select(UserDB).where(UserDB.username == "test"))
     assert user.username == "test"
     assert user.email == "a@b.com"
     assert user.id == 1

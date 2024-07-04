@@ -5,7 +5,7 @@ from fast_api_tutorial.persistence.relational.table_registry import table_regist
 
 
 @table_registry.mapped_as_dataclass
-class User:
+class UserDB:
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
@@ -13,4 +13,6 @@ class User:
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(init=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(init=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now(), onupdate=func.now()
+    )
