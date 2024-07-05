@@ -1,3 +1,5 @@
+from typing import Annotated
+from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
@@ -10,3 +12,6 @@ def get_unit_of_work() -> UnitOfWork:
     engine = create_engine(db_url)
     session_factory = sessionmaker(bind=engine)
     return RelationalUnitOfWork(session_factory)
+
+
+T_UnitOfWork = Annotated[UnitOfWork, Depends(get_unit_of_work)]
