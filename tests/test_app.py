@@ -50,6 +50,11 @@ def test_create_valid_user_response_does_not_return_password(
     assert response["email"] == mock_user.email
 
 
+def test_create_valid_user_commits_changes(client, unit_of_work, valid_user_request):
+    client.post("/users/", json=valid_user_request)
+    assert unit_of_work.commit.called
+
+
 def test_get_users_returns_ok(client):
     response = client.get("/users/")
     assert response.status_code == HTTPStatus.OK
@@ -119,6 +124,13 @@ def test_update_existing_user_returns_updated_user(
     assert response.json()["id"] == mock_user.id
 
 
+def test_updating_existing_user_commits_changes(
+    client, unit_of_work, valid_user_request
+):
+    _make_put_request(client, request=valid_user_request)
+    assert unit_of_work.commit.called
+
+
 def test_update_existing_user_hashes_password_before_saving(
     client, user_repository, user_request, password_hasher
 ):
@@ -150,6 +162,11 @@ def _make_delete_request(client, user_id: int = 1, token: str = "good_token"):
 def test_delete_existing_user_returns_no_content(client):
     response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.NO_CONTENT
+
+
+def test_delete_existing_user_returns_commits_deletion(client, unit_of_work):
+    _make_delete_request(client)
+    assert unit_of_work.commit.called
 
 
 def test_delete_non_existing_user_returns_not_found(client, user_repository):
@@ -223,7 +240,7 @@ def test_update_user_returns_unauthorized_if_user_not_in_database(
 
 
 def test_update_user_returns_forbidden_if_user_not_trying_to_update_other_account(
-    client, user_repository, valid_user_request
+    client, user_repository
 ):
     bearer_id = 123
     update_id = 321
