@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from fast_api_tutorial.app import (
     app,
+)
+from fast_api_tutorial.api import (
     get_unit_of_work,
     get_password_hasher,
     get_jwt_builder,
