@@ -198,13 +198,13 @@ def test_login_with_bad_username_returns_bad_request(
 ):
     user_repository.get_from_email.side_effect = NotFoundError
     password_hasher.verify_password.return_value = True
-    response = client.post("/token", data={"username": "bad", "password": "bad"})
+    response = client.post("auth/token", data={"username": "bad", "password": "bad"})
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_login_with_bad_password_returns_bad_request(client, password_hasher):
     password_hasher.verify_password.return_value = False
-    response = client.post("/token", data={"username": "email", "password": "bad"})
+    response = client.post("auth/token", data={"username": "email", "password": "bad"})
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
@@ -216,7 +216,9 @@ def test_successful_login_returns_jwt(
     user_repository.get_from_email.return_value = fake_user
     fake_token = {"access_token": "123", "token_type": "bearer"}
     jwt_builder.create_token.return_value = fake_token
-    response = client.post("/token", data={"username": "email", "password": "password"})
+    response = client.post(
+        "auth/token", data={"username": "email", "password": "password"}
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == fake_token
     assert jwt_builder.create_token.call_args[0][0] == "a@b.com"
