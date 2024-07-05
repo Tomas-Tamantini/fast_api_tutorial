@@ -1,23 +1,7 @@
 import pytest
 from jwt import decode
 from fast_api_tutorial.exceptions import BadTokenError
-from fast_api_tutorial.security import PwdLibHasher, JwtBuilder, Authorization
-
-# TODO: Break into separate test files
-
-
-def test_pwdlib_hasher_hashes_password():
-    password = "123"
-    hashed = PwdLibHasher().hash_password(password)
-    assert hashed != password
-
-
-def test_pwdlib_hasher_verifies_password():
-    password = "123"
-    hasher = PwdLibHasher()
-    hashed = hasher.hash_password(password)
-    assert hasher.verify_password(password, hashed)
-    assert not hasher.verify_password("wrong", hashed)
+from fast_api_tutorial.security import JwtBuilder
 
 
 def test_jwt_builder_returns_bearer_token_type():
@@ -60,15 +44,3 @@ def test_bad_jwt_raises_bad_token_error_on_decode():
     bad_token = "bad"
     with pytest.raises(BadTokenError):
         builder.get_token_subject(bad_token)
-
-
-def test_only_user_can_delete_their_own_account():
-    auth = Authorization()
-    assert auth.can_delete_account(actor_id=1, target_id=1)
-    assert not auth.can_delete_account(actor_id=1, target_id=2)
-
-
-def test_only_user_can_update_their_own_account():
-    auth = Authorization()
-    assert auth.can_update_account(actor_id=1, target_id=1)
-    assert not auth.can_update_account(actor_id=1, target_id=2)
