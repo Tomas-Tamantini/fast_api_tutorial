@@ -1,43 +1,17 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from fast_api_tutorial.schemas import (
     User,
 )
 from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
-from fast_api_tutorial.persistence.relational import RelationalUnitOfWork
 from fast_api_tutorial.exceptions import (
     NotFoundError,
     BadTokenError,
     CredentialsError,
 )
-from fast_api_tutorial.settings import Settings
-from fast_api_tutorial.security import (
-    PasswordHasher,
-    PwdLibHasher,
-    JwtBuilderProtocol,
-    JwtBuilder,
-)
-
-
-def get_unit_of_work() -> UnitOfWork:
-    db_url = Settings().DATABASE_URL
-    engine = create_engine(db_url)
-    session_factory = sessionmaker(bind=engine)
-    return RelationalUnitOfWork(session_factory)
-
-
-def get_password_hasher() -> PasswordHasher:
-    return PwdLibHasher()
-
-
-def get_jwt_builder() -> JwtBuilderProtocol:
-    return JwtBuilder(
-        secret=Settings().JWT_SECRET,
-        expiration_minutes=Settings().JWT_EXPIRATION_MINUTES,
-    )
-
+from fast_api_tutorial.security import JwtBuilderProtocol
+from fast_api_tutorial.api.dependencies.get_unit_of_work import get_unit_of_work
+from fast_api_tutorial.api.dependencies.get_jwt_builder import get_jwt_builder
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

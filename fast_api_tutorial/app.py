@@ -19,7 +19,7 @@ from fast_api_tutorial.exceptions import (
     WrongUsernameOrPasswordError,
 )
 from fast_api_tutorial.security import PasswordHasher, JwtBuilderProtocol
-from fast_api_tutorial.api import (
+from fast_api_tutorial.api.dependencies import (
     get_unit_of_work,
     get_current_user,
     get_jwt_builder,
