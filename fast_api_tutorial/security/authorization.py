@@ -1,15 +1,19 @@
 from typing import Protocol
+from dataclasses import dataclass
 
 
-class AuthorizationProtocol(Protocol):
-    def can_delete_account(self, actor_id: int, target_id: int) -> bool: ...
-
-    def can_update_account(self, actor_id: int, target_id: int) -> bool: ...
+class Authorization(Protocol):
+    def has_permission(self, actor_id: int) -> bool: ...
 
 
-class Authorization:
-    def can_delete_account(self, actor_id: int, target_id: int) -> bool:
-        return actor_id == target_id
+@dataclass(frozen=True)
+class DeleteAccountAuthorization:
+    target_id: int
 
-    def can_update_account(self, actor_id: int, target_id: int) -> bool:
-        return actor_id == target_id
+    def has_permission(self, actor_id: int) -> bool:
+        return actor_id == self.target_id
+
+
+@dataclass(frozen=True)
+class UpdateAccountAuthorization(DeleteAccountAuthorization):
+    pass

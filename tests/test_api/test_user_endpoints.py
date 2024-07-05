@@ -201,7 +201,7 @@ def test_update_user_returns_unauthorized_if_user_not_in_database(
 def test_update_user_returns_forbidden_if_user_not_authorized_to_update_account(
     client, authorization
 ):
-    authorization.can_update_account.return_value = False
+    authorization.has_permission.return_value = False
     response = _make_put_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
 
@@ -226,6 +226,6 @@ def test_delete_user_returns_unauthorized_if_user_not_in_database(
 def test_delete_user_returns_forbidden_if_user_not_authorized_to_delete_account(
     client, authorization
 ):
-    authorization.can_delete_account.return_value = False
+    authorization.has_permission.return_value = False
     response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
