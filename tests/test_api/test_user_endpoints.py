@@ -198,15 +198,11 @@ def test_update_user_returns_unauthorized_if_user_not_in_database(
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_update_user_returns_forbidden_if_user_not_trying_to_update_other_account(
-    client, user_repository
+def test_update_user_returns_forbidden_if_user_not_authorized_to_update_account(
+    client, authorization
 ):
-    bearer_id = 123
-    update_id = 321
-    user_repository.get_from_email.return_value = User(
-        id=bearer_id, username="user", email="a@b.com", password="123"
-    )
-    response = _make_put_request(client, user_id=update_id)
+    authorization.can_update_account.return_value = False
+    response = _make_put_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
 
 
@@ -227,13 +223,9 @@ def test_delete_user_returns_unauthorized_if_user_not_in_database(
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_delete_user_returns_forbidden_if_user_not_trying_to_delete_other_account(
-    client, user_repository
+def test_delete_user_returns_forbidden_if_user_not_authorized_to_delete_account(
+    client, authorization
 ):
-    bearer_id = 123
-    delete_id = 321
-    user_repository.get_from_email.return_value = User(
-        id=bearer_id, username="user", email="a@b.com", password="123"
-    )
-    response = _make_delete_request(client, user_id=delete_id)
+    authorization.can_delete_account.return_value = False
+    response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN

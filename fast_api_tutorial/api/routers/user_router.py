@@ -16,6 +16,7 @@ from fast_api_tutorial.api.dependencies import (
     T_UnitOfWork,
     T_CurrentUser,
     T_PasswordHasher,
+    T_Authorization,
 )
 
 user_router = APIRouter(prefix="/users", tags=["users"])
@@ -59,8 +60,11 @@ def update_user(
     password_hasher: T_PasswordHasher,
     uow: T_UnitOfWork,
     current_user: T_CurrentUser,
+    authorization: T_Authorization,
 ):
-    if current_user.id != user_id:
+    if not authorization.can_update_account(
+        actor_id=current_user.id, target_id=user_id
+    ):
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="Not enough permissions to update this user.",
@@ -78,8 +82,15 @@ def update_user(
 
 
 @user_router.delete("/{user_id}/", status_code=HTTPStatus.NO_CONTENT)
-def delete_user(user_id: int, uow: T_UnitOfWork, current_user: T_CurrentUser):
-    if current_user.id != user_id:
+def delete_user(
+    user_id: int,
+    uow: T_UnitOfWork,
+    current_user: T_CurrentUser,
+    authorization: T_Authorization,
+):
+    if not authorization.can_delete_account(
+        actor_id=current_user.id, target_id=user_id
+    ):
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="Not enough permissions to delete this user.",
