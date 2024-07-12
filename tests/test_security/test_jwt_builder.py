@@ -53,7 +53,8 @@ def test_jwt_builder_checks_if_token_is_expired():
         token = token_builder.create_token("bearer").access_token
 
     with freeze_time("2021-01-01 12:09:59"):
-        assert not token_builder.token_is_expired(token)
+        token_builder.get_token_subject(token)
 
     with freeze_time("2021-01-01 12:10:01"):
-        assert token_builder.token_is_expired(token)
+        with pytest.raises(BadTokenError):
+            token_builder.get_token_subject(token)

@@ -11,5 +11,4 @@ def jwt_builder():
         access_token="access_token", token_type="bearer"
     )
     builder.get_token_subject.return_value = "bearer@email.com"
-    builder.token_is_expired.return_value = False
     return builder
