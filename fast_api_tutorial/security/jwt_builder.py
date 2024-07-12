@@ -1,7 +1,7 @@
 from typing import Protocol
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from jwt import encode, decode, DecodeError
+from jwt import encode, decode, DecodeError, ExpiredSignatureError
 from fast_api_tutorial.schemas import Token
 from fast_api_tutorial.exceptions import BadTokenError
 
@@ -41,4 +41,8 @@ class JwtBuilder:
             raise BadTokenError()
 
     def token_is_expired(self, token: str) -> bool:
-        return False  # TODO: Implement this method
+        try:
+            payload = decode(token, self._secret, algorithms=[self._algorithm])
+            return "exp" not in payload
+        except ExpiredSignatureError:
+            return True

@@ -2,6 +2,7 @@ import pytest
 from jwt import decode
 from fast_api_tutorial.exceptions import BadTokenError
 from fast_api_tutorial.security import JwtBuilder
+from freezegun import freeze_time
 
 
 def test_jwt_builder_returns_bearer_token_type():
@@ -25,9 +26,9 @@ def test_jwt_builder_puts_email_in_subject():
 
 def test_jwt_builder_includes_expiration():
     expiration_minutes = 10
-    payload = _decode_jwt(expiration_minutes=expiration_minutes)
-    assert "exp" in payload
-    # TODO: Check that the expiration is within 10 minutes
+    with freeze_time("2024-07-12 21:47:17"):
+        payload = _decode_jwt(expiration_minutes=expiration_minutes)
+        assert payload["exp"] == 1720821437
 
 
 def test_jwt_builder_extracts_subject_from_token():
@@ -46,7 +47,13 @@ def test_bad_jwt_raises_bad_token_error_on_decode():
         builder.get_token_subject(bad_token)
 
 
-@pytest.mark.skip
 def test_jwt_builder_checks_if_token_is_expired():
-    # TODO: Implement this test
-    raise NotImplementedError()
+    with freeze_time("2021-01-01 12:00:00"):
+        token_builder = JwtBuilder(secret="secret", expiration_minutes=10)
+        token = token_builder.create_token("bearer").access_token
+
+    with freeze_time("2021-01-01 12:09:59"):
+        assert not token_builder.token_is_expired(token)
+
+    with freeze_time("2021-01-01 12:10:01"):
+        assert token_builder.token_is_expired(token)
