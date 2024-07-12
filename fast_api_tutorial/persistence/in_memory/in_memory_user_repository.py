@@ -12,7 +12,7 @@ class InMemoryUserRepository:
             raise NotFoundError()
         return index
 
-    def add(self, entity: CreateUserRequest) -> None:
+    def add(self, entity: CreateUserRequest) -> User:
         for user in self._users:
             if user.email == entity.email:
                 raise DuplicateFieldError(field="Email")
