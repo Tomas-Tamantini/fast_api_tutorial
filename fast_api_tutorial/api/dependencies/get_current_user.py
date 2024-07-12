@@ -24,6 +24,8 @@ async def get_current_user(
         email = jwt_builder.get_token_subject(token)
     except BadTokenError:
         raise CredentialsError()
+    if jwt_builder.token_is_expired(token):
+        raise CredentialsError()
     try:
         return uow.user_repository.get_from_email(email)
     except NotFoundError:

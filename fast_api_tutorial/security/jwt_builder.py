@@ -11,6 +11,8 @@ class JwtBuilderProtocol(Protocol):
 
     def get_token_subject(self, token: str) -> str: ...
 
+    def token_is_expired(self, token: str) -> bool: ...
+
 
 class JwtBuilder:
     def __init__(self, secret: str, expiration_minutes: int):
@@ -37,3 +39,6 @@ class JwtBuilder:
             return decode(token, self._secret, algorithms=[self._algorithm])["sub"]
         except DecodeError:
             raise BadTokenError()
+
+    def token_is_expired(self, token: str) -> bool:
+        return False  # TODO: Implement this method

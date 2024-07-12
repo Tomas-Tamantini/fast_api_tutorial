@@ -44,3 +44,9 @@ def test_bad_jwt_raises_bad_token_error_on_decode():
     bad_token = "bad"
     with pytest.raises(BadTokenError):
         builder.get_token_subject(bad_token)
+
+
+@pytest.mark.skip
+def test_jwt_builder_checks_if_token_is_expired():
+    # TODO: Implement this test
+    raise NotImplementedError()

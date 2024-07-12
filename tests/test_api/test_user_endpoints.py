@@ -190,6 +190,13 @@ def test_update_user_returns_unauthorized_if_could_not_decode_token(
     assert jwt_builder.get_token_subject.call_args[0][0] == "bad_token"
 
 
+def test_update_user_returns_unauthorized_if_token_expired(client, jwt_builder):
+    jwt_builder.token_is_expired.return_value = True
+    response = _make_put_request(client, token="expired_token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert jwt_builder.token_is_expired.call_args[0][0] == "expired_token"
+
+
 def test_update_user_returns_unauthorized_if_user_not_in_database(
     client, user_repository
 ):
@@ -229,3 +236,10 @@ def test_delete_user_returns_forbidden_if_user_not_authorized_to_delete_account(
     authorization.has_permission.return_value = False
     response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_delete_user_returns_unauthorized_if_token_expired(client, jwt_builder):
+    jwt_builder.token_is_expired.return_value = True
+    response = _make_delete_request(client, token="expired_token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert jwt_builder.token_is_expired.call_args[0][0] == "expired_token"
