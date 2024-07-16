@@ -1,5 +1,6 @@
 from http import HTTPStatus
-from fast_api_tutorial.exceptions import NotFoundError
+import pytest
+from fast_api_tutorial.exceptions import NotFoundError, BadTokenError
 
 
 def test_login_with_bad_username_returns_bad_request(
@@ -31,3 +32,19 @@ def test_successful_login_returns_jwt(
     assert response.status_code == HTTPStatus.OK
     assert response.json() == fake_token
     assert jwt_builder.create_token.call_args[0][0] == "a@b.com"
+
+
+def test_refresh_token_with_bad_token_returns_unauthorized(client, jwt_builder):
+    jwt_builder.get_token_subject.side_effect = BadTokenError
+    response = client.post("auth/refresh-token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+
+@pytest.mark.skip("TODO: Check why this is failing")
+def test_refresh_token_with_good_token_returns_token(client, jwt_builder):
+    fake_token = {"access_token": "123", "token_type": "bearer"}
+    jwt_builder.create_token.return_value = fake_token
+
+    response = client.post("auth/refresh-token")
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == fake_token

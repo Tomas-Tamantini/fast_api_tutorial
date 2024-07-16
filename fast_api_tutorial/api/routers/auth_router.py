@@ -6,6 +6,7 @@ from fast_api_tutorial.api.dependencies import (
     T_UnitOfWork,
     T_JwtBuilder,
     T_PasswordHasher,
+    T_CurrentUser,
 )
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -27,3 +28,8 @@ def login(
         raise WrongUsernameOrPasswordError()
     else:
         return jwt_builder.create_token(user.email)
+
+
+@auth_router.post("/refresh-token", response_model=Token)
+def refresh_token(user: T_CurrentUser, jwt_builder: T_JwtBuilder):
+    return jwt_builder.create_token(user.email)
