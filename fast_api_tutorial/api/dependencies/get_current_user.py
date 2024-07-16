@@ -12,7 +12,7 @@ from fast_api_tutorial.exceptions import (
 from fast_api_tutorial.api.dependencies.get_unit_of_work import T_UnitOfWork
 from fast_api_tutorial.api.dependencies.get_jwt_builder import T_JwtBuilder
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 async def get_current_user(
