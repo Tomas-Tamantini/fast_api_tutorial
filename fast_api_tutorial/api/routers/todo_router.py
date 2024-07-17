@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from fastapi import APIRouter
-from fast_api_tutorial.schemas import TodoRequest, TodoResponse
+from fast_api_tutorial.schemas import TodoRequest, TodoResponse, TodoDbRequest
 from fast_api_tutorial.api.dependencies import T_UnitOfWork, T_CurrentUser
 
 todo_router = APIRouter(prefix="/todos", tags=["todos"])
@@ -12,9 +12,8 @@ def create_todo(
     current_user: T_CurrentUser,
     uow: T_UnitOfWork,
 ):
-    return TodoResponse(
-        id=1,
-        title=todo.title,
-        description=todo.description,
-        status=todo.status,
-    )
+    db_request = TodoDbRequest.from_todo_request(todo, current_user.id)
+    with uow:
+        response = uow.todo_repository.add(db_request)
+        uow.commit()
+        return response

@@ -40,3 +40,28 @@ def test_create_valid_todo_returns_created_todo_response(client, valid_todo_requ
         "description": valid_todo_request["description"],
         "status": valid_todo_request["status"],
     }
+
+
+def test_create_valid_todo_delegates_storage_to_repository(
+    client, valid_todo_request, todo_repository
+):
+    _make_create_request(client, valid_todo_request)
+    assert todo_repository.add.call_args[0][0].title == valid_todo_request["title"]
+    assert (
+        todo_repository.add.call_args[0][0].description
+        == valid_todo_request["description"]
+    )
+    assert todo_repository.add.call_args[0][0].status == valid_todo_request["status"]
+
+
+def test_create_valid_todo_stores_todo_with_user_id(
+    client, valid_todo_request, todo_repository, user_repository, user_response
+):
+    user_repository.get_from_email.return_value = user_response(id=123)
+    _make_create_request(client, valid_todo_request)
+    assert todo_repository.add.call_args[0][0].user_id == 123
+
+
+def test_create_valid_todo_commits_changes(client, valid_todo_request, unit_of_work):
+    _make_create_request(client, valid_todo_request)
+    assert unit_of_work.commit.called
