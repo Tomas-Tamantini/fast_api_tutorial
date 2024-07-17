@@ -10,3 +10,11 @@ class RelationalTodoRepository:
     def add(self, entity: TodoDbRequest) -> TodoResponse:
         todo = TodoDB(**entity.model_dump())
         self._session.add(todo)
+        self._session.commit()
+        self._session.refresh(todo)
+        return TodoResponse(
+            id=todo.id,
+            title=todo.title,
+            description=todo.description,
+            status=todo.status,
+        )
