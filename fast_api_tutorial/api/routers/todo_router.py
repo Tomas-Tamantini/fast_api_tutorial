@@ -12,4 +12,9 @@ def create_todo(
     current_user: T_CurrentUser,
     uow: T_UnitOfWork,
 ):
-    raise NotImplementedError()
+    return TodoResponse(
+        id=1,
+        title=todo.title,
+        description=todo.description,
+        status=todo.status,
+    )
