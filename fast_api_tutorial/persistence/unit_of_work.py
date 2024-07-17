@@ -1,11 +1,17 @@
 from abc import ABC, abstractmethod
 from fast_api_tutorial.persistence.user_repository import UserRepository
+from fast_api_tutorial.persistence.todo_repository import TodoRepository
 
 
 class UnitOfWork(ABC):
     @property
     @abstractmethod
     def user_repository(self) -> UserRepository:
+        pass
+
+    @property
+    @abstractmethod
+    def todo_repository(self) -> TodoRepository:
         pass
 
     @abstractmethod

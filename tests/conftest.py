@@ -12,3 +12,5 @@ from tests.fixtures.jwt_builder import jwt_builder
 from tests.fixtures.client import client
 from tests.fixtures.sql_session import session
 from tests.fixtures.todo_request import valid_todo_request
+from tests.fixtures.todo_response import todo_response
+from tests.fixtures.todo_repository import todo_repository

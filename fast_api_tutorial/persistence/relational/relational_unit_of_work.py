@@ -13,6 +13,7 @@ class RelationalUnitOfWork(UnitOfWork):
         super().__init__()
         self._session_factory = session_factory
         self._user_repository = None
+        self._todo_repository = None
         self._session = None
 
     @property
@@ -20,6 +21,10 @@ class RelationalUnitOfWork(UnitOfWork):
         if self._user_repository is None:
             self._user_repository = RelationalUserRepository(self._session_factory())
         return self._user_repository
+
+    @property
+    def todo_repository(self):
+        raise NotImplementedError("Relational todo repository not implemented")
 
     def __enter__(self):
         self._session = self._session_factory()
