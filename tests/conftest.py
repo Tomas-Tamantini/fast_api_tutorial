@@ -11,3 +11,4 @@ from tests.fixtures.password_hasher import password_hasher
 from tests.fixtures.jwt_builder import jwt_builder
 from tests.fixtures.client import client
 from tests.fixtures.sql_session import session
+from tests.fixtures.todo_request import valid_todo_request
