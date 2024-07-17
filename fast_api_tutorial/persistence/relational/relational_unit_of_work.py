@@ -6,6 +6,9 @@ from fast_api_tutorial.persistence.unit_of_work import UnitOfWork
 from fast_api_tutorial.persistence.relational.relational_user_repository import (
     RelationalUserRepository,
 )
+from fast_api_tutorial.persistence.relational.relational_todo_repository import (
+    RelationalTodoRepository,
+)
 
 
 class RelationalUnitOfWork(UnitOfWork):
@@ -23,12 +26,15 @@ class RelationalUnitOfWork(UnitOfWork):
         return self._user_repository
 
     @property
-    def todo_repository(self):
-        raise NotImplementedError("Relational todo repository not implemented")
+    def todo_repository(self) -> RelationalTodoRepository:
+        if self._todo_repository is None:
+            self._todo_repository = RelationalTodoRepository(self._session_factory())
+        return self._todo_repository
 
     def __enter__(self):
         self._session = self._session_factory()
         self._user_repository = RelationalUserRepository(self._session)
+        self._todo_repository = RelationalTodoRepository(self._session)
         return super().__enter__()
 
     def __exit__(self, *_):
