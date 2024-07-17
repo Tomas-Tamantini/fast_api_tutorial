@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from fast_api_tutorial.schemas import User
 from fast_api_tutorial.exceptions import (
     NotFoundError,
     DuplicateFieldError,
