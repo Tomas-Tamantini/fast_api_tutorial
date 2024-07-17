@@ -40,11 +40,13 @@ def test_refresh_token_with_bad_token_returns_unauthorized(client, jwt_builder):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-@pytest.mark.skip("TODO: Check why this is failing")
 def test_refresh_token_with_good_token_returns_token(client, jwt_builder):
     fake_token = {"access_token": "123", "token_type": "bearer"}
     jwt_builder.create_token.return_value = fake_token
 
-    response = client.post("auth/refresh-token")
+    response = client.post(
+        "auth/refresh-token",
+        headers={"Authorization": "Bearer good_token"},
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == fake_token
