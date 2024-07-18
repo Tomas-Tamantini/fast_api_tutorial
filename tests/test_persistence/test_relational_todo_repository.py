@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import select
 from fast_api_tutorial.persistence.relational import RelationalTodoRepository, TodoDB
-from fast_api_tutorial.schemas import TodoDbRequest
+from fast_api_tutorial.persistence.models import TodoDbRequest
 
 
 @pytest.mark.integration

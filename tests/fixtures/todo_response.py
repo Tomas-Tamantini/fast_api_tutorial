@@ -1,5 +1,6 @@
 import pytest
-from fast_api_tutorial.schemas import TodoResponse, TodoStatus
+from fast_api_tutorial.schemas import TodoStatus
+from fast_api_tutorial.persistence.models import TodoDbResponse
 
 
 @pytest.fixture
@@ -9,7 +10,9 @@ def todo_response():
         title: str = "test",
         description: str = "test",
         status: TodoStatus = TodoStatus.pending,
-    ) -> TodoResponse:
-        return TodoResponse(id=id, title=title, description=description, status=status)
+    ) -> TodoDbResponse:
+        return TodoDbResponse(
+            id=id, title=title, description=description, status=status
+        )
 
     return _todo_response

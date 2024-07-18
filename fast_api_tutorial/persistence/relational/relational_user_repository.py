@@ -12,6 +12,7 @@ class RelationalUserRepository:
     def add(self, entity: CreateUserRequest) -> User:
         user = UserDB(**entity.model_dump())
         self._session.add(user)
+        # TODO: Return the user object with the id
 
     def get_from_email(self, email: str) -> User:
         result = self._session.scalar(select(UserDB).where(UserDB.email == email))
