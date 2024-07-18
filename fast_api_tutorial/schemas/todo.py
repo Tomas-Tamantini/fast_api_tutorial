@@ -12,3 +12,7 @@ class TodoCore(BaseModel):
     title: str
     description: str
     status: TodoStatus
+
+
+class Todo(TodoCore):
+    id: int

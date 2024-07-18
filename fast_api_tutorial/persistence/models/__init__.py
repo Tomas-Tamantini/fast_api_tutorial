@@ -1,2 +1,2 @@
-from .todo import TodoDbRequest, TodoDbResponse
+from .todo import TodoDbRequest
 from .user import CreateUserDbRequest
