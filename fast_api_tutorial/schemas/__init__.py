@@ -1,2 +1,2 @@
-from .user import CreateUserRequest, User, UserResponse, UserListResponse
+from .user import User, UserPublicData, UserCore
 from .todo import TodoStatus, TodoCore

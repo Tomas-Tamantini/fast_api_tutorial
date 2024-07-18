@@ -1,11 +1,7 @@
 from http import HTTPStatus
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
-from fast_api_tutorial.schemas import (
-    CreateUserRequest,
-    UserResponse,
-    UserListResponse,
-)
+from fast_api_tutorial.api.dto import UserResponse, UserListResponse, CreateUserRequest
 from fast_api_tutorial.exceptions import (
     NotFoundError,
     DuplicateFieldError,

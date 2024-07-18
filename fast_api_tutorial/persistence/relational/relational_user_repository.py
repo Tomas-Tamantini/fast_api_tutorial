@@ -1,15 +1,16 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from fast_api_tutorial.schemas import CreateUserRequest, User
+from fast_api_tutorial.schemas import User
 from fast_api_tutorial.persistence.relational.user_model import UserDB
 from fast_api_tutorial.exceptions import NotFoundError
+from fast_api_tutorial.persistence.models import CreateUserDbRequest
 
 
 class RelationalUserRepository:
     def __init__(self, session: Session):
         self._session = session
 
-    def add(self, entity: CreateUserRequest) -> User:
+    def add(self, entity: CreateUserDbRequest) -> User:
         user = UserDB(**entity.model_dump())
         self._session.add(user)
         # TODO: Return the user object with the id
@@ -37,7 +38,7 @@ class RelationalUserRepository:
         else:
             return User.model_validate(result)
 
-    def update(self, id: int, entity: CreateUserRequest) -> None:
+    def update(self, id: int, entity: CreateUserDbRequest) -> None:
         updated_count = (
             self._session.query(UserDB)
             .filter(UserDB.id == id)

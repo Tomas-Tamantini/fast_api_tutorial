@@ -1,5 +1,6 @@
 from tests.fixtures.user_request import (
     user_request,
+    user_db_request,
     valid_user_request,
     invalid_user_request,
 )

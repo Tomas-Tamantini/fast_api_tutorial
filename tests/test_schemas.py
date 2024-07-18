@@ -1,4 +1,4 @@
-from fast_api_tutorial.schemas import CreateUserRequest
+from fast_api_tutorial.api.dto import CreateUserRequest
 
 
 def test_create_user_request_hashes_password():

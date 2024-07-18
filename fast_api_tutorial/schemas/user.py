@@ -2,34 +2,16 @@ from typing import Callable
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 
-class _UserPublicData(BaseModel):
+class UserPublicData(BaseModel):
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     username: str
     email: EmailStr
 
 
-class User(_UserPublicData):
-    id: int
+class UserCore(UserPublicData):
     password: str
 
 
-class UserResponse(_UserPublicData):
+class User(UserCore):
     id: int
-
-
-class UserListResponse(BaseModel):
-    users: list[UserResponse]
-
-
-class CreateUserRequest(_UserPublicData):
-    password: str
-
-    def with_hashed_password(
-        self, hash_method: Callable[[str], str]
-    ) -> "CreateUserRequest":
-        return CreateUserRequest(
-            username=self.username,
-            email=self.email,
-            password=hash_method(self.password),
-        )
