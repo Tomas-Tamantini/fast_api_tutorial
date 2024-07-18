@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from fast_api_tutorial.schemas import User
+from fast_api_tutorial.core import User
 from fast_api_tutorial.persistence.relational.user_model import UserDB
 from fast_api_tutorial.exceptions import NotFoundError
 from fast_api_tutorial.persistence.models import CreateUserDbRequest

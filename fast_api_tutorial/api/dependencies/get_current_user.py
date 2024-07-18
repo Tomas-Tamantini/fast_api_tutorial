@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from fast_api_tutorial.schemas import (
+from fast_api_tutorial.core import (
     User,
 )
 from fast_api_tutorial.exceptions import (

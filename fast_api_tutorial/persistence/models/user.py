@@ -1,4 +1,4 @@
-from fast_api_tutorial.schemas import UserCore
+from fast_api_tutorial.core import UserCore
 
 
 class CreateUserDbRequest(UserCore):

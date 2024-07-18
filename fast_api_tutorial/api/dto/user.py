@@ -1,6 +1,6 @@
 from typing import Callable
 from pydantic import BaseModel
-from fast_api_tutorial.schemas import UserPublicData, UserCore
+from fast_api_tutorial.core import UserPublicData, UserCore
 from fast_api_tutorial.persistence.models import CreateUserDbRequest
 
 

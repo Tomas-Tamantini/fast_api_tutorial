@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fast_api_tutorial.schemas import Todo
+from fast_api_tutorial.core import Todo
 from fast_api_tutorial.persistence.models import TodoDbRequest
 from fast_api_tutorial.persistence.relational.todo_model import TodoDB
 

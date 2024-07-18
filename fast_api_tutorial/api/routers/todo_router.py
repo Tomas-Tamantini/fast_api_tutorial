@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from fastapi import APIRouter
 from fast_api_tutorial.api.dto import TodoRequest
-from fast_api_tutorial.schemas import Todo
+from fast_api_tutorial.core import Todo
 from fast_api_tutorial.api.dependencies import T_UnitOfWork, T_CurrentUser
 
 todo_router = APIRouter(prefix="/todos", tags=["todos"])

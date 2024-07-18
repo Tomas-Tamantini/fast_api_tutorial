@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from fast_api_tutorial.persistence.relational.table_registry import table_registry
-from fast_api_tutorial.schemas import TodoStatus
+from fast_api_tutorial.core import TodoStatus
 
 
 @table_registry.mapped_as_dataclass

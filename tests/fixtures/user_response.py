@@ -1,5 +1,5 @@
 import pytest
-from fast_api_tutorial.schemas import User
+from fast_api_tutorial.core import User
 
 
 @pytest.fixture

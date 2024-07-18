@@ -1,4 +1,4 @@
-from fast_api_tutorial.schemas import TodoCore
+from fast_api_tutorial.core import TodoCore
 
 
 class TodoDbRequest(TodoCore):

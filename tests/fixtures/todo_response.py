@@ -1,6 +1,6 @@
 import pytest
-from fast_api_tutorial.schemas import TodoStatus
-from fast_api_tutorial.schemas import Todo
+from fast_api_tutorial.core import TodoStatus
+from fast_api_tutorial.core import Todo
 
 
 @pytest.fixture

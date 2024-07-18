@@ -1,5 +1,5 @@
 from typing import Protocol
-from fast_api_tutorial.schemas import User
+from fast_api_tutorial.core import User
 from fast_api_tutorial.persistence.models import CreateUserDbRequest
 
 
