@@ -5,6 +5,7 @@ from enum import Enum
 class TodoStatus(str, Enum):
     pending = "pending"
     done = "done"
+    trash = "trash"
 
 
 class TodoRequest(BaseModel):
