@@ -12,7 +12,7 @@ def create_todo(
     current_user: T_CurrentUser,
     uow: T_UnitOfWork,
 ):
-    db_request = TodoDbRequest.from_todo_request(todo, current_user.id)
+    db_request = todo.to_db_request(current_user.id)
     with uow:
         response = uow.todo_repository.add(db_request)
         uow.commit()

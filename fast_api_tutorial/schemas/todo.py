@@ -8,23 +8,19 @@ class TodoStatus(str, Enum):
     trash = "trash"
 
 
-class TodoRequest(BaseModel):
+class TodoCore(BaseModel):
     title: str
     description: str
     status: TodoStatus
 
 
-class TodoDbRequest(TodoRequest):
+class TodoDbRequest(TodoCore):
     user_id: int
 
-    @classmethod
-    def from_todo_request(cls, todo_request: TodoRequest, user_id: int):
-        return cls(
-            title=todo_request.title,
-            description=todo_request.description,
-            status=todo_request.status,
-            user_id=user_id,
-        )
+
+class TodoRequest(TodoCore):
+    def to_db_request(self, user_id: int):
+        return TodoDbRequest(user_id=user_id, **self.model_dump())
 
 
 class TodoResponse(TodoRequest):
