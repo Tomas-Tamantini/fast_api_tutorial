@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from fast_api_tutorial.security import JwtBuilderProtocol
-from fast_api_tutorial.schemas import Token
+from fast_api_tutorial.api.dto import Token
 
 
 @pytest.fixture

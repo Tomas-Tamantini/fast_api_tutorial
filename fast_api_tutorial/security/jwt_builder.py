@@ -2,7 +2,7 @@ from typing import Protocol
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from jwt import encode, decode, DecodeError, ExpiredSignatureError
-from fast_api_tutorial.schemas import Token
+from fast_api_tutorial.api.dto import Token
 from fast_api_tutorial.exceptions import BadTokenError
 
 

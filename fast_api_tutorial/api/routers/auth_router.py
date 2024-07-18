@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
-from fast_api_tutorial.schemas import Token
+from fast_api_tutorial.api.dto import Token
 from fast_api_tutorial.exceptions import NotFoundError, WrongUsernameOrPasswordError
 from fast_api_tutorial.api.dependencies import (
     T_UnitOfWork,
