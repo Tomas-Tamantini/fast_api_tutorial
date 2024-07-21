@@ -8,6 +8,12 @@ def _make_create_request(client, request_body: dict, token="good_token"):
     )
 
 
+def _make_delete_request(client, todo_id: int = 1, token="good_token"):
+    return client.delete(
+        f"/todos/{todo_id}", headers={"Authorization": f"Bearer {token}"}
+    )
+
+
 def test_create_todo_returns_unauthorized_if_no_token(client):
     response = client.post("/todos/", json={}, headers={})
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -65,3 +71,34 @@ def test_create_valid_todo_stores_todo_with_user_id(
 def test_create_valid_todo_commits_changes(client, valid_todo_request, unit_of_work):
     _make_create_request(client, valid_todo_request)
     assert unit_of_work.commit.called
+
+
+def test_delete_todo_returns_unauthorized_if_no_token(client):
+    response = client.delete("/todos/1", headers={})
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+
+def test_delete_todo_returns_unauthorized_if_bad_token(client, jwt_builder):
+    jwt_builder.get_token_subject.side_effect = BadTokenError
+    response = _make_delete_request(client, token="bad_token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert jwt_builder.get_token_subject.call_args[0][0] == "bad_token"
+
+
+def test_delete_todo_returns_not_found_if_todo_does_not_exist(client, todo_repository):
+    todo_repository.get_by_id.return_value = None
+    response = _make_delete_request(client)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_todo_returns_forbidden_if_user_is_not_owner(
+    client, todo_repository, todo_response
+):
+    todo_repository.get_by_id.return_value = todo_response(user_id=123)
+    response = _make_delete_request(client)
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_delete_todo_delegates_storage_to_repository(client, todo_repository):
+    _make_delete_request(client, todo_id=123)
+    assert todo_repository.delete.call_args[0][0] == 123
