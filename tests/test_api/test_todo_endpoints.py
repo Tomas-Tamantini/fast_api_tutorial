@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Optional
 from fast_api_tutorial.exceptions import BadTokenError, NotFoundError
 from fast_api_tutorial.persistence.models import PaginationParameters
 
@@ -15,10 +16,24 @@ def _make_delete_request(client, todo_id: int = 1, token="good_token"):
     )
 
 
-def _make_get_request(client, limit: int = 10, offset: int = 0, token="good_token"):
+def _make_get_request(
+    client,
+    limit: int = 10,
+    offset: int = 0,
+    status: Optional[str] = None,
+    title: Optional[str] = None,
+    description: Optional[str] = None,
+    token="good_token",
+):
+    query_params = {"limit": limit, "offset": offset}
+    if status:
+        query_params["status"] = status
+    if title:
+        query_params["title"] = title
+    if description:
+        query_params["description"] = description
     return client.get(
-        f"/todos/?limit={limit}&offset={offset}",
-        headers={"Authorization": f"Bearer {token}"},
+        "/todos/", headers={"Authorization": f"Bearer {token}"}, params=query_params
     )
 
 
@@ -143,8 +158,12 @@ def test_get_todos_returns_only_todos_owned_by_user(
     client, todo_repository, user_repository, user_response
 ):
     user_repository.get_from_email.return_value = user_response(id=123)
-    _make_get_request(client, limit=10, offset=0)
-    assert todo_repository.get_paginated.call_args[0][0] == PaginationParameters(
-        limit=10, offset=0
-    )
+    _make_get_request(client)
     assert todo_repository.get_paginated.call_args[0][1].user_id == 123
+
+
+def test_get_todos_filters_by_attributes(client, todo_repository):
+    _make_get_request(client, status="pending", title="title")
+    assert todo_repository.get_paginated.call_args[0][1].status == "pending"
+    assert todo_repository.get_paginated.call_args[0][1].title == "title"
+    assert todo_repository.get_paginated.call_args[0][1].description is None

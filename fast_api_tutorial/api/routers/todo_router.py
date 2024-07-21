@@ -1,6 +1,6 @@
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
-from fast_api_tutorial.api.dto import TodoRequest, TodoListResponse
+from fastapi import APIRouter, HTTPException, Depends
+from fast_api_tutorial.api.dto import TodoRequest, TodoListResponse, GetTodosQueryParams
 from fast_api_tutorial.core import Todo
 from fast_api_tutorial.api.dependencies import (
     T_UnitOfWork,
@@ -30,13 +30,10 @@ def create_todo(
 def get_todos(
     current_user: T_CurrentUser,
     uow: T_UnitOfWork,
-    limit: int = 10,
-    offset: int = 0,
+    query_params: GetTodosQueryParams = Depends(),
 ):
-    pagination = PaginationParameters(limit=limit, offset=offset)
-    todo_filter = TodoDbFilter(
-        user_id=current_user.id,
-    )
+    pagination = query_params.pagination()
+    todo_filter = query_params.filters(user_id=current_user.id)
     with uow:
         return {"todos": uow.todo_repository.get_paginated(pagination, todo_filter)}
 
