@@ -17,3 +17,11 @@ class DeleteAccountAuthorization:
 @dataclass(frozen=True)
 class UpdateAccountAuthorization(DeleteAccountAuthorization):
     pass
+
+
+@dataclass(frozen=True)
+class DeleteTodoAuthorization:
+    owner_id: int
+
+    def has_permission(self, actor_id: int) -> bool:
+        return actor_id == self.owner_id
