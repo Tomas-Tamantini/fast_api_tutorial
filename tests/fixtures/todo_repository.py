@@ -7,4 +7,5 @@ from fast_api_tutorial.persistence.todo_repository import TodoRepository
 def todo_repository(todo_response):
     repository = MagicMock(spec=TodoRepository)
     repository.add.return_value = todo_response()
+    repository.get_by_id.return_value = todo_response()
     return repository
