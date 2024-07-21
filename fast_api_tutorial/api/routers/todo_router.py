@@ -34,7 +34,17 @@ def get_todos(
     pagination = query_params.pagination()
     todo_filter = query_params.filters(user_id=current_user.id)
     with uow:
-        return {"todos": uow.todo_repository.get_paginated(pagination, todo_filter)}
+        todos_db = uow.todo_repository.get_paginated(pagination, todo_filter)
+        todos = [
+            Todo(
+                id=todo.id,
+                title=todo.title,
+                description=todo.description,
+                status=todo.status,
+            )
+            for todo in todos_db
+        ]
+        return {"todos": todos}
 
 
 @todo_router.delete("/{todo_id}", status_code=HTTPStatus.NO_CONTENT)

@@ -139,16 +139,13 @@ def test_get_todos_returns_unauthorized_if_bad_token(client, jwt_builder):
     assert jwt_builder.get_token_subject.call_args[0][0] == "bad_token"
 
 
-def test_get_todos_returns_paginated_todos(client, todo_repository):
-    todo_response = {
-        "id": 1,
-        "title": "title",
-        "description": "description",
-        "status": "pending",
-    }
-    todo_repository.get_paginated.return_value = [{**todo_response, "user_id": 123}]
+def test_get_todos_returns_paginated_todos(client, todo_repository, todo_response):
+    todo = todo_response()
+    todo_repository.get_paginated.return_value = [todo]
     response = _make_get_request(client, limit=10, offset=0)
-    assert response.json() == {"todos": [todo_response]}
+    todo_json = todo.model_dump()
+    del todo_json["user_id"]
+    assert response.json() == {"todos": [todo_json]}
     assert todo_repository.get_paginated.call_args[0][0] == PaginationParameters(
         limit=10, offset=0
     )
