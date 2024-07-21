@@ -1,9 +1,13 @@
 from typing import Optional
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
-from fast_api_tutorial.persistence.models import TodoDbRequest, TodoDbResponse
-from fast_api_tutorial.persistence.relational.todo_model import TodoDB
 from fast_api_tutorial.exceptions import NotFoundError
+from fast_api_tutorial.persistence.relational.todo_model import TodoDB
+from fast_api_tutorial.persistence.models import (
+    TodoDbRequest,
+    TodoDbResponse,
+    PaginationParameters,
+)
 
 
 class RelationalTodoRepository:
@@ -32,3 +36,6 @@ class RelationalTodoRepository:
         )
         if deleted_count == 0:
             raise NotFoundError()
+
+    def get_paginated(self, pagination: PaginationParameters) -> list[TodoDbResponse]:
+        raise NotImplementedError()
