@@ -1,7 +1,11 @@
 import pytest
 from sqlalchemy import select
 from fast_api_tutorial.persistence.relational import RelationalTodoRepository, TodoDB
-from fast_api_tutorial.persistence.models import TodoDbRequest
+from fast_api_tutorial.persistence.models import (
+    TodoDbRequest,
+    PaginationParameters,
+    TodoDbFilter,
+)
 from fast_api_tutorial.exceptions import NotFoundError
 
 
@@ -57,3 +61,42 @@ def test_deleting_todo_in_db_deletes_it(session):
     session.commit()
     repository.delete(1)
     assert repository.get_by_id(1) is None
+
+
+@pytest.mark.integration
+def test_getting_todos_returns_paginated_and_filtered_list(session):
+    repository = RelationalTodoRepository(session)
+    data = [
+        ("laundry", "pending", 1),
+        ("dishes", "done", 1),
+        ("clean room", "pending", 1),
+        ("wash car", "done", 1),
+        ("vacuum", "pending", 1),
+        ("lawn", "trash", 1),
+        ("study", "done", 2),
+    ]
+    for title, status, user_id in data:
+        repository.add(
+            TodoDbRequest(
+                title=title, description=title, status=status, user_id=user_id
+            )
+        )
+    session.commit()
+
+    pagination = PaginationParameters(limit=2, offset=1)
+    filters = TodoDbFilter(user_id=1, status="pending", title=None, description=None)
+    todos = repository.get_paginated(pagination, filters)
+    titles = [todo.title for todo in todos]
+    assert titles == ["clean room", "vacuum"]
+
+    pagination = PaginationParameters(limit=3, offset=2)
+    filters = TodoDbFilter(user_id=1, status=None, title="a", description=None)
+    todos = repository.get_paginated(pagination, filters)
+    titles = [todo.title for todo in todos]
+    assert titles == ["wash car", "vacuum", "lawn"]
+
+    pagination = PaginationParameters(limit=3, offset=0)
+    filters = TodoDbFilter(user_id=2, status=None, title=None, description=None)
+    todos = repository.get_paginated(pagination, filters)
+    titles = [todo.title for todo in todos]
+    assert titles == ["study"]

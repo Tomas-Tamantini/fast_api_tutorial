@@ -41,4 +41,13 @@ class RelationalTodoRepository:
     def get_paginated(
         self, pagination: PaginationParameters, filters: TodoDbFilter
     ) -> list[TodoDbResponse]:
-        raise NotImplementedError()
+        query = select(TodoDB).where(TodoDB.user_id == filters.user_id)
+        if filters.title:
+            query = query.where(TodoDB.title.contains(filters.title))
+        if filters.description:
+            query = query.where(TodoDB.description.contains(filters.description))
+        if filters.status:
+            query = query.where(TodoDB.status == filters.status)
+        return self._session.scalars(
+            query.offset(pagination.offset).limit(pagination.limit)
+        ).all()
