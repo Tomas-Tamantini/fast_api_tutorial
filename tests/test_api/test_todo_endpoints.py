@@ -14,6 +14,13 @@ def _make_delete_request(client, todo_id: int = 1, token="good_token"):
     )
 
 
+def _make_get_request(client, limit: int = 10, offset: int = 0, token="good_token"):
+    return client.get(
+        f"/todos/?limit={limit}&offset={offset}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+
 def test_create_todo_returns_unauthorized_if_no_token(client):
     response = client.post("/todos/", json={}, headers={})
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -102,3 +109,27 @@ def test_delete_todo_returns_forbidden_if_user_does_not_have_authorization(
 def test_delete_todo_delegates_storage_to_repository(client, todo_repository):
     _make_delete_request(client, todo_id=123)
     assert todo_repository.delete.call_args[0][0] == 123
+
+
+def test_get_todos_returns_unauthorized_if_no_token(client):
+    response = client.get("/todos/", headers={})
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+
+def test_get_todos_returns_unauthorized_if_bad_token(client, jwt_builder):
+    jwt_builder.get_token_subject.side_effect = BadTokenError
+    response = _make_get_request(client, token="bad_token")
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert jwt_builder.get_token_subject.call_args[0][0] == "bad_token"
+
+
+def test_get_todos_returns_paginated_todos(client, todo_repository):
+    todo_response = {
+        "id": 1,
+        "title": "title",
+        "description": "description",
+        "status": "pending",
+    }
+    todo_repository.get_paginated.return_value = [{**todo_response, "user_id": 123}]
+    response = _make_get_request(client)
+    assert response.json() == {"todos": [todo_response]}

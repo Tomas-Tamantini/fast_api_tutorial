@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
-from fast_api_tutorial.api.dto import TodoRequest
+from fast_api_tutorial.api.dto import TodoRequest, TodoListResponse
 from fast_api_tutorial.core import Todo
 from fast_api_tutorial.api.dependencies import (
     T_UnitOfWork,
@@ -23,6 +23,17 @@ def create_todo(
         response = uow.todo_repository.add(db_request)
         uow.commit()
         return response
+
+
+@todo_router.get("/", response_model=TodoListResponse)
+def get_todos(
+    current_user: T_CurrentUser,
+    uow: T_UnitOfWork,
+    limit: int = 10,
+    offset: int = 0,
+):
+    with uow:
+        return {"todos": uow.todo_repository.get_paginated(limit, offset)}
 
 
 @todo_router.delete("/{todo_id}", status_code=HTTPStatus.NO_CONTENT)
