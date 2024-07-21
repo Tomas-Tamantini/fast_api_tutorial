@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from fast_api_tutorial.exceptions import BadTokenError, NotFoundError
+from fast_api_tutorial.persistence.models import PaginationParameters
 
 
 def _make_create_request(client, request_body: dict, token="good_token"):
@@ -131,5 +132,19 @@ def test_get_todos_returns_paginated_todos(client, todo_repository):
         "status": "pending",
     }
     todo_repository.get_paginated.return_value = [{**todo_response, "user_id": 123}]
-    response = _make_get_request(client)
+    response = _make_get_request(client, limit=10, offset=0)
     assert response.json() == {"todos": [todo_response]}
+    assert todo_repository.get_paginated.call_args[0][0] == PaginationParameters(
+        limit=10, offset=0
+    )
+
+
+def test_get_todos_returns_only_todos_owned_by_user(
+    client, todo_repository, user_repository, user_response
+):
+    user_repository.get_from_email.return_value = user_response(id=123)
+    _make_get_request(client, limit=10, offset=0)
+    assert todo_repository.get_paginated.call_args[0][0] == PaginationParameters(
+        limit=10, offset=0
+    )
+    assert todo_repository.get_paginated.call_args[0][1].user_id == 123

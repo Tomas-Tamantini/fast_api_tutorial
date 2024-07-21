@@ -6,6 +6,7 @@ from fast_api_tutorial.persistence.relational.todo_model import TodoDB
 from fast_api_tutorial.persistence.models import (
     TodoDbRequest,
     TodoDbResponse,
+    TodoDbFilter,
     PaginationParameters,
 )
 
@@ -37,5 +38,7 @@ class RelationalTodoRepository:
         if deleted_count == 0:
             raise NotFoundError()
 
-    def get_paginated(self, pagination: PaginationParameters) -> list[TodoDbResponse]:
+    def get_paginated(
+        self, pagination: PaginationParameters, filters: TodoDbFilter
+    ) -> list[TodoDbResponse]:
         raise NotImplementedError()

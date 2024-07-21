@@ -2,6 +2,7 @@ from typing import Protocol, Optional
 from fast_api_tutorial.persistence.models import (
     TodoDbRequest,
     TodoDbResponse,
+    TodoDbFilter,
     PaginationParameters,
 )
 
@@ -14,5 +15,5 @@ class TodoRepository(Protocol):
     def delete(self, entity_id: int) -> None: ...
 
     def get_paginated(
-        self, pagination: PaginationParameters
+        self, pagination: PaginationParameters, filters: TodoDbFilter
     ) -> list[TodoDbResponse]: ...

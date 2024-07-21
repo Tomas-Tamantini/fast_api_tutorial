@@ -8,6 +8,7 @@ from fast_api_tutorial.api.dependencies import (
     T_DeleteTodoAuthorization,
 )
 from fast_api_tutorial.exceptions import NotFoundError
+from fast_api_tutorial.persistence.models import PaginationParameters, TodoDbFilter
 
 todo_router = APIRouter(prefix="/todos", tags=["todos"])
 
@@ -32,8 +33,12 @@ def get_todos(
     limit: int = 10,
     offset: int = 0,
 ):
+    pagination = PaginationParameters(limit=limit, offset=offset)
+    todo_filter = TodoDbFilter(
+        user_id=current_user.id,
+    )
     with uow:
-        return {"todos": uow.todo_repository.get_paginated(limit, offset)}
+        return {"todos": uow.todo_repository.get_paginated(pagination, todo_filter)}
 
 
 @todo_router.delete("/{todo_id}", status_code=HTTPStatus.NO_CONTENT)
