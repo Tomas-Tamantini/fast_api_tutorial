@@ -4,6 +4,7 @@ from fast_api_tutorial.persistence.models import CreateUserDbRequest
 
 
 class UserRepository(Protocol):
+    # TODO: Change signature to match todo_repositoty -> get_by_id instead of get, and return None instead of raising NotFoundError
 
     def add(self, entity: CreateUserDbRequest) -> User: ...
 

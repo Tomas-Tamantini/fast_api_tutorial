@@ -1,7 +1,9 @@
 from typing import Optional
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 from fast_api_tutorial.persistence.models import TodoDbRequest, TodoDbResponse
 from fast_api_tutorial.persistence.relational.todo_model import TodoDB
+from fast_api_tutorial.exceptions import NotFoundError
 
 
 class RelationalTodoRepository:
@@ -22,7 +24,11 @@ class RelationalTodoRepository:
         )
 
     def get_by_id(self, entity_id: int) -> Optional[TodoDbResponse]:
-        raise NotImplementedError()
+        return self._session.scalar(select(TodoDB).where(TodoDB.id == entity_id))
 
     def delete(self, entity_id: int) -> None:
-        raise NotImplementedError()
+        deleted_count = (
+            self._session.query(TodoDB).filter(TodoDB.id == entity_id).delete()
+        )
+        if deleted_count == 0:
+            raise NotFoundError()
