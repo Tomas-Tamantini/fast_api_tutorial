@@ -8,7 +8,6 @@ from fast_api_tutorial.api.dependencies import (
     T_DeleteTodoAuthorization,
 )
 from fast_api_tutorial.exceptions import NotFoundError
-from fast_api_tutorial.persistence.models import PaginationParameters, TodoDbFilter
 
 todo_router = APIRouter(prefix="/todos", tags=["todos"])
 
