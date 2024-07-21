@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fast_api_tutorial.exceptions import BadTokenError
+from fast_api_tutorial.exceptions import BadTokenError, NotFoundError
 
 
 def _make_create_request(client, request_body: dict, token="good_token"):
@@ -86,15 +86,15 @@ def test_delete_todo_returns_unauthorized_if_bad_token(client, jwt_builder):
 
 
 def test_delete_todo_returns_not_found_if_todo_does_not_exist(client, todo_repository):
-    todo_repository.get_by_id.return_value = None
+    todo_repository.delete.side_effect = NotFoundError
     response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_delete_todo_returns_forbidden_if_user_is_not_owner(
-    client, todo_repository, todo_response
+def test_delete_todo_returns_forbidden_if_user_does_not_have_authorization(
+    client, authorization
 ):
-    todo_repository.get_by_id.return_value = todo_response(user_id=123)
+    authorization.has_permission.return_value = False
     response = _make_delete_request(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
 

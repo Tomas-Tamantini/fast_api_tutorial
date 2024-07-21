@@ -9,6 +9,7 @@ from fast_api_tutorial.api.dependencies import (
     get_jwt_builder,
     get_delete_account_authorization,
     get_update_account_authorization,
+    get_delete_todo_authorization,
 )
 
 
@@ -24,5 +25,6 @@ def client(unit_of_work, password_hasher, jwt_builder, authorization):
         app.dependency_overrides[get_update_account_authorization] = (
             lambda: authorization
         )
+        app.dependency_overrides[get_delete_todo_authorization] = lambda: authorization
         yield client
         app.dependency_overrides.clear()
