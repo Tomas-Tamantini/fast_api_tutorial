@@ -2,6 +2,7 @@ from http import HTTPStatus
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from fast_api_tutorial.api.dto import UserResponse, UserListResponse, CreateUserRequest
+from fast_api_tutorial.persistence.models import PaginationParameters
 from fast_api_tutorial.exceptions import (
     NotFoundError,
     DuplicateFieldError,
@@ -36,9 +37,10 @@ def create_user(
 
 
 @user_router.get("/", response_model=UserListResponse)
-def get_users(uow: T_UnitOfWork, page: int = 1, size: int = 5):
+def get_users(uow: T_UnitOfWork, offset: int = 0, limit: int = 5):
+    pagination = PaginationParameters(limit=limit, offset=offset)
     with uow:
-        return {"users": uow.user_repository.get_paginated(page=page, size=size)}
+        return {"users": uow.user_repository.get_paginated(pagination)}
 
 
 @user_router.get("/{user_id}/", response_model=UserResponse)

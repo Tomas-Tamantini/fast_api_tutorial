@@ -4,6 +4,7 @@ from fast_api_tutorial.exceptions import (
     DuplicateFieldError,
     BadTokenError,
 )
+from fast_api_tutorial.persistence.models import PaginationParameters
 
 
 def test_create_invalid_user_returns_unprocessable_entity(client, invalid_user_request):
@@ -52,12 +53,14 @@ def test_get_users_returns_paginated_users(client, user_repository, user_respons
         user_response(id=123),
         user_response(id=321),
     ]
-    response = client.get("/users/", params={"page": 1, "size": 2})
+    response = client.get("/users/", params={"offset": 1, "limit": 2})
     assert "users" in response.json()
     users = response.json()["users"]
     assert [user["id"] for user in users] == [123, 321]
     assert not any("password" in user for user in users)
-    assert user_repository.get_paginated.call_args[1] == {"page": 1, "size": 2}
+    assert user_repository.get_paginated.call_args[0][0] == PaginationParameters(
+        offset=1, limit=2
+    )
 
 
 def test_get_user_returns_ok(client):

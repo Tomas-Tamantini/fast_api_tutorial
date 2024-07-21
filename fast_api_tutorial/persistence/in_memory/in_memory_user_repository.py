@@ -1,6 +1,9 @@
 from fast_api_tutorial.core import User
 from fast_api_tutorial.exceptions import NotFoundError, DuplicateFieldError
-from fast_api_tutorial.persistence.models import CreateUserDbRequest
+from fast_api_tutorial.persistence.models import (
+    CreateUserDbRequest,
+    PaginationParameters,
+)
 
 
 class InMemoryUserRepository:
@@ -34,11 +37,11 @@ class InMemoryUserRepository:
     def get_all(self) -> list[User]:
         return self._users
 
-    def get_paginated(self, page: int, size: int) -> list[User]:
-        start = (page - 1) * size
+    def get_paginated(self, pagination: PaginationParameters) -> list[User]:
+        start = pagination.offset
         if start >= len(self._users):
             return []
-        end = min(start + size, len(self._users))
+        end = min(start + pagination.limit, len(self._users))
         return self._users[start:end]
 
     def get(self, id: int) -> User:

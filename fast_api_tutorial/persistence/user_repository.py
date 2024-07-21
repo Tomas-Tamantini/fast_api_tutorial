@@ -1,6 +1,9 @@
 from typing import Protocol
 from fast_api_tutorial.core import User
-from fast_api_tutorial.persistence.models import CreateUserDbRequest
+from fast_api_tutorial.persistence.models import (
+    CreateUserDbRequest,
+    PaginationParameters,
+)
 
 
 class UserRepository(Protocol):
@@ -12,7 +15,7 @@ class UserRepository(Protocol):
 
     def get_all(self) -> list[User]: ...
 
-    def get_paginated(self, page: int, size: int) -> list[User]: ...
+    def get_paginated(self, pagination: PaginationParameters) -> list[User]: ...
 
     def get(self, id: int) -> User: ...
 

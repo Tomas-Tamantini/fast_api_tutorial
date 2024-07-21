@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from fast_api_tutorial.core import User
 from fast_api_tutorial.persistence.relational.user_model import UserDB
 from fast_api_tutorial.exceptions import NotFoundError
-from fast_api_tutorial.persistence.models import CreateUserDbRequest
+from fast_api_tutorial.persistence.models import (
+    CreateUserDbRequest,
+    PaginationParameters,
+)
 
 
 class RelationalUserRepository:
@@ -26,9 +29,10 @@ class RelationalUserRepository:
         users = self._session.scalars(select(UserDB))
         return [User.model_validate(user) for user in users]
 
-    def get_paginated(self, page: int, size: int) -> list[User]:
-        offset = (page - 1) * size
-        users = self._session.scalars(select(UserDB).limit(size).offset(offset))
+    def get_paginated(self, pagination: PaginationParameters) -> list[User]:
+        users = self._session.scalars(
+            select(UserDB).limit(pagination.limit).offset(pagination.offset)
+        )
         return [User.model_validate(user) for user in users]
 
     def get(self, id: int) -> User:

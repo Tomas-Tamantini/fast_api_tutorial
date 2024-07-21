@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import select
 from fast_api_tutorial.persistence.relational import RelationalUserRepository, UserDB
+from fast_api_tutorial.persistence.models import PaginationParameters
 from fast_api_tutorial.exceptions import NotFoundError
 
 
@@ -64,7 +65,8 @@ def test_get_paginated_returns_users_in_page(session, user_db_request):
     for i in range(1, 4):
         repository.add(user_db_request(username=f"test {i}", email=f"a{i}@b.com"))
     session.commit()
-    users = repository.get_paginated(page=2, size=2)
+    pagination = PaginationParameters(offset=2, limit=2)
+    users = repository.get_paginated(pagination)
     assert len(users) == 1
     assert users[0].username == "test 3"
 
