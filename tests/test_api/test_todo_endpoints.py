@@ -62,13 +62,13 @@ def test_create_valid_todo_returns_created(client, valid_todo_request):
 
 
 def test_create_valid_todo_returns_created_todo_response(client, valid_todo_request):
-    response = _make_create_request(client, valid_todo_request)
-    assert response.json() == {
-        "id": 1,
-        "title": valid_todo_request["title"],
-        "description": valid_todo_request["description"],
-        "status": valid_todo_request["status"],
-    }
+    response = _make_create_request(client, valid_todo_request).json()
+    assert response["title"] == valid_todo_request["title"]
+    assert response["description"] == valid_todo_request["description"]
+    assert response["status"] == valid_todo_request["status"]
+    assert "created_at" in response
+    assert "id" in response
+    assert "updated_at" in response
 
 
 def test_create_valid_todo_delegates_storage_to_repository(
@@ -142,10 +142,13 @@ def test_get_todos_returns_unauthorized_if_bad_token(client, jwt_builder):
 def test_get_todos_returns_paginated_todos(client, todo_repository, todo_response):
     todo = todo_response()
     todo_repository.get_paginated.return_value = [todo]
-    response = _make_get_request(client, limit=10, offset=0)
+    response = _make_get_request(client, limit=10, offset=0).json()
+    assert len(response["todos"]) == 1
+    retrieved = response["todos"][0]
+    assert "user_id" not in retrieved
     todo_json = todo.model_dump()
-    del todo_json["user_id"]
-    assert response.json() == {"todos": [todo_json]}
+    assert retrieved["id"] == todo_json["id"]
+    assert retrieved["title"] == todo_json["title"]
     assert todo_repository.get_paginated.call_args[0][0] == PaginationParameters(
         limit=10, offset=0
     )

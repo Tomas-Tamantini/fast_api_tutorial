@@ -26,6 +26,8 @@ class RelationalTodoRepository:
             description=todo.description,
             status=todo.status,
             user_id=todo.user_id,
+            created_at=todo.created_at,
+            updated_at=todo.updated_at,
         )
 
     def get_by_id(self, entity_id: int) -> Optional[TodoDbResponse]:

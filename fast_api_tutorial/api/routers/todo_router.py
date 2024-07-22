@@ -41,6 +41,8 @@ def get_todos(
                 title=todo.title,
                 description=todo.description,
                 status=todo.status,
+                created_at=todo.created_at,
+                updated_at=todo.updated_at,
             )
             for todo in todos_db
         ]
