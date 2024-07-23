@@ -46,7 +46,8 @@ class RelationalUnitOfWork(UnitOfWork):
             self._session.commit()
         except IntegrityError as e:
             self.rollback()
-            field = str(e.orig).split(".")[-1].strip()
+            error_msg = str(e.orig).lower()
+            field = error_msg.split("(")[1].split(")")[0]
             raise DuplicateFieldError(field)
 
     def rollback(self) -> None:
