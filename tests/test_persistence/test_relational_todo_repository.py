@@ -1,16 +1,32 @@
 import pytest
 from sqlalchemy import select
-from fast_api_tutorial.persistence.relational import RelationalTodoRepository, TodoDB
+from fast_api_tutorial.persistence.relational import (
+    RelationalTodoRepository,
+    TodoDB,
+    RelationalUserRepository,
+)
 from fast_api_tutorial.persistence.models import (
     TodoDbRequest,
     PaginationParameters,
     TodoDbFilter,
+    CreateUserDbRequest,
 )
 from fast_api_tutorial.exceptions import NotFoundError
 
 
+def _add_users(session, num_users: int = 1):
+    user_repo = RelationalUserRepository(session)
+    for i in range(num_users):
+        user = CreateUserDbRequest(
+            username=f"name{i}", email=f"email{i}@mail.com", password="123"
+        )
+        user_repo.add(user)
+    session.commit()
+
+
 @pytest.mark.integration
 def test_create_todo_saves_it_to_db(session):
+    _add_users(session)
     repository = RelationalTodoRepository(session)
     repository.add(
         TodoDbRequest(title="test", description="test", status="pending", user_id=1)
@@ -32,6 +48,7 @@ def test_getting_todo_not_in_db_returns_none(session):
 
 @pytest.mark.integration
 def test_getting_todo_from_db_with_valid_id_returns_todo(session):
+    _add_users(session)
     repository = RelationalTodoRepository(session)
     repository.add(
         TodoDbRequest(title="test", description="test", status="pending", user_id=1)
@@ -54,6 +71,7 @@ def test_deleting_todo_not_in_db_raises_not_found_error(session):
 
 @pytest.mark.integration
 def test_deleting_todo_in_db_deletes_it(session):
+    _add_users(session)
     repository = RelationalTodoRepository(session)
     repository.add(
         TodoDbRequest(title="test", description="test", status="pending", user_id=1)
@@ -64,7 +82,9 @@ def test_deleting_todo_in_db_deletes_it(session):
 
 
 @pytest.mark.integration
-def test_getting_todos_returns_paginated_and_filtered_list(session):
+def test_getting_todos_returns_paginated_and_filtered_list(session, user_db_request):
+    _add_users(session, num_users=2)
+    session.commit()
     repository = RelationalTodoRepository(session)
     data = [
         ("laundry", "pending", 1),
