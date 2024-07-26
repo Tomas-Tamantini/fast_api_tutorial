@@ -191,3 +191,4 @@ pyrightconfig.json
 
 # Local dev-database file
 dev_database.db
+deploy_data.txt
